@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Plus, Pencil, Trash2, Search, Columns, Filter } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Columns } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { EmployeeForm } from '@/components/forms/EmployeeForm'
@@ -41,66 +41,14 @@ import { type EmployeeFormValues } from '@/components/forms/employee-schema'
 import { useToast } from '@/hooks/use-toast'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-
-interface Employee extends EmployeeFormValues {
-  id: number
-  image?: string
-}
-
-const initialEmployees: Employee[] = [
-  {
-    id: 1,
-    name: 'Ana Souza',
-    role: 'UX Designer',
-    dept: 'Produto',
-    email: 'ana.souza@company.com',
-    image: 'female',
-    cpf: '123.456.789-00',
-    rg: '12.345.678-9',
-    birthDate: new Date('1990-05-15'),
-    address: 'Rua das Flores, 123, São Paulo - SP',
-    phone: '(11) 98765-4321',
-    admissionDate: new Date('2021-03-10'),
-    salary: 8500,
-    contractType: 'CLT',
-    status: 'Ativo',
-  },
-  {
-    id: 2,
-    name: 'Carlos Lima',
-    role: 'Dev Frontend',
-    dept: 'Engenharia',
-    email: 'carlos.lima@company.com',
-    image: 'male',
-    cpf: '234.567.890-11',
-    rg: '23.456.789-0',
-    birthDate: new Date('1992-08-20'),
-    address: 'Av. Paulista, 1000, São Paulo - SP',
-    phone: '(11) 91234-5678',
-    admissionDate: new Date('2022-01-15'),
-    salary: 9200,
-    contractType: 'PJ',
-    status: 'Férias',
-  },
-  {
-    id: 3,
-    name: 'Mariana Costa',
-    role: 'Gerente de RH',
-    dept: 'RH',
-    email: 'mariana.costa@company.com',
-    image: 'female',
-    cpf: '345.678.901-22',
-    rg: '34.567.890-1',
-    birthDate: new Date('1985-11-30'),
-    address: 'Rua Augusta, 500, São Paulo - SP',
-    phone: '(11) 99876-5432',
-    admissionDate: new Date('2020-06-01'),
-    salary: 12000,
-    contractType: 'CLT',
-    status: 'Ativo',
-  },
-]
+import {
+  getEmployees,
+  createEmployee,
+  updateEmployee,
+  deleteEmployee,
+  uploadDocument,
+  type Employee,
+} from '@/services/employees'
 
 type VisibleColumns = {
   cpf: boolean
@@ -114,11 +62,12 @@ type VisibleColumns = {
 }
 
 export default function Colaboradores() {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees)
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<VisibleColumns>({
     cpf: false,
     rg: false,
@@ -131,45 +80,123 @@ export default function Colaboradores() {
   })
   const { toast } = useToast()
 
-  const filteredEmployees = employees.filter(
-    (e) =>
-      e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.role.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
-
-  const handleSubmit = (data: EmployeeFormValues) => {
-    if (editingEmployee) {
-      setEmployees(
-        employees.map((e) =>
-          e.id === editingEmployee.id ? { ...e, ...data } : e,
-        ),
-      )
+  const fetchEmployees = async () => {
+    try {
+      const data = await getEmployees()
+      setEmployees(data)
+    } catch (error) {
+      console.error(error)
       toast({
-        title: 'Colaborador atualizado',
-        description: `${data.name} foi atualizado com sucesso.`,
-      })
-    } else {
-      setEmployees([
-        ...employees,
-        {
-          ...data,
-          id: Date.now(),
-          image: Math.random() > 0.5 ? 'male' : 'female',
-        },
-      ])
-      toast({
-        title: 'Colaborador criado',
-        description: `${data.name} foi adicionado com sucesso.`,
+        title: 'Erro ao carregar',
+        description: 'Não foi possível carregar os colaboradores.',
+        variant: 'destructive',
       })
     }
-    setIsDialogOpen(false)
-    setEditingEmployee(null)
   }
 
-  const handleDelete = () => {
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
+
+  const filteredEmployees = employees.filter(
+    (e) =>
+      e.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.cargo.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  const handleSubmit = async (data: EmployeeFormValues, files: File[]) => {
+    setIsLoading(true)
+    try {
+      let uploadedDocs = editingEmployee?.documentos_urls || []
+
+      // This assumes we create the employee first to get ID, then upload documents, then update employee.
+      // Or for update, we just upload and update.
+      // For create, we need an ID for the path. We can use a temp ID or just UUID from DB.
+      // Simplified: We use a generic 'temp' or handle it properly.
+      // Better: Create employee, get ID. Then upload. Then update employee with URLs.
+
+      const empData = {
+        nome: data.name,
+        cpf: data.cpf,
+        rg: data.rg,
+        data_nascimento: format(data.birthDate, 'yyyy-MM-dd'),
+        endereco: data.address,
+        email: data.email,
+        telefone: data.phone,
+        cargo: data.role,
+        departamento: data.dept,
+        data_admissao: format(data.admissionDate, 'yyyy-MM-dd'),
+        salario: data.salary,
+        tipo_contrato: data.contractType,
+        status: data.status,
+        image_gender:
+          editingEmployee?.image_gender ||
+          (Math.random() > 0.5 ? 'male' : 'female'),
+        documentos_urls: uploadedDocs,
+      }
+
+      let empId = editingEmployee?.id
+
+      if (editingEmployee) {
+        await updateEmployee(editingEmployee.id, empData)
+        toast({
+          title: 'Colaborador atualizado',
+          description: `${data.name} atualizado.`,
+        })
+      } else {
+        const newEmp = await createEmployee(empData)
+        empId = newEmp.id
+        toast({
+          title: 'Colaborador criado',
+          description: `${data.name} criado.`,
+        })
+      }
+
+      if (files.length > 0 && empId) {
+        const newUploads = await Promise.all(
+          files.map(async (file) => {
+            const url = await uploadDocument(file, empId!)
+            return {
+              name: file.name,
+              url,
+              size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+            }
+          }),
+        )
+
+        const finalDocs = [...uploadedDocs, ...newUploads]
+        await updateEmployee(empId, { documentos_urls: finalDocs })
+      }
+
+      await fetchEmployees()
+      setIsDialogOpen(false)
+      setEditingEmployee(null)
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro ao salvar',
+        description: 'Ocorreu um erro ao salvar o colaborador.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
     if (deletingId) {
-      setEmployees(employees.filter((e) => e.id !== deletingId))
-      toast({ title: 'Colaborador removido', variant: 'destructive' })
+      try {
+        await deleteEmployee(deletingId)
+        await fetchEmployees()
+        toast({ title: 'Colaborador removido', variant: 'destructive' })
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: 'Erro ao remover',
+          description: 'Não foi possível remover.',
+          variant: 'destructive',
+        })
+      }
       setDeletingId(null)
     }
   }
@@ -178,6 +205,22 @@ export default function Colaboradores() {
     setEditingEmployee(employee)
     setIsDialogOpen(true)
   }
+
+  const mapToFormValues = (emp: Employee): EmployeeFormValues => ({
+    name: emp.nome,
+    cpf: emp.cpf,
+    rg: emp.rg,
+    birthDate: new Date(emp.data_nascimento),
+    address: emp.endereco,
+    email: emp.email,
+    phone: emp.telefone,
+    role: emp.cargo,
+    dept: emp.departamento,
+    admissionDate: new Date(emp.data_admissao),
+    salary: emp.salario,
+    contractType: emp.tipo_contrato,
+    status: emp.status,
+  })
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -220,9 +263,18 @@ export default function Colaboradores() {
               </DialogTitle>
             </DialogHeader>
             <EmployeeForm
-              initialData={editingEmployee}
+              initialData={
+                editingEmployee
+                  ? {
+                      ...mapToFormValues(editingEmployee),
+                      id: editingEmployee.id,
+                      documentos_urls: editingEmployee.documentos_urls,
+                    }
+                  : null
+              }
               onSubmit={handleSubmit}
               onCancel={() => setIsDialogOpen(false)}
+              isLoading={isLoading}
             />
           </DialogContent>
         </Dialog>
@@ -356,15 +408,15 @@ export default function Colaboradores() {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9">
                         <AvatarImage
-                          src={`https://img.usecurling.com/ppl/thumbnail?gender=${employee.image}&seed=${employee.id}`}
+                          src={`https://img.usecurling.com/ppl/thumbnail?gender=${employee.image_gender || 'male'}&seed=${employee.id}`}
                         />
                         <AvatarFallback>
-                          {employee.name.charAt(0)}
+                          {employee.nome.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
                         <span className="font-medium text-sm">
-                          {employee.name}
+                          {employee.nome}
                         </span>
                         {!visibleColumns.email && (
                           <span className="text-xs text-muted-foreground">
@@ -380,36 +432,36 @@ export default function Colaboradores() {
                   {visibleColumns.cpf && <TableCell>{employee.cpf}</TableCell>}
                   {visibleColumns.rg && <TableCell>{employee.rg}</TableCell>}
                   {visibleColumns.phone && (
-                    <TableCell>{employee.phone}</TableCell>
+                    <TableCell>{employee.telefone}</TableCell>
                   )}
                   {visibleColumns.address && (
                     <TableCell
                       className="max-w-[200px] truncate"
-                      title={employee.address}
+                      title={employee.endereco}
                     >
-                      {employee.address}
+                      {employee.endereco}
                     </TableCell>
                   )}
                   {visibleColumns.birthDate && (
                     <TableCell>
-                      {format(employee.birthDate, 'dd/MM/yyyy')}
+                      {format(new Date(employee.data_nascimento), 'dd/MM/yyyy')}
                     </TableCell>
                   )}
-                  <TableCell>{employee.role}</TableCell>
-                  <TableCell>{employee.dept}</TableCell>
+                  <TableCell>{employee.cargo}</TableCell>
+                  <TableCell>{employee.departamento}</TableCell>
                   <TableCell>
-                    {format(employee.admissionDate, 'dd/MM/yyyy')}
+                    {format(new Date(employee.data_admissao), 'dd/MM/yyyy')}
                   </TableCell>
                   {visibleColumns.salary && (
                     <TableCell>
                       R${' '}
-                      {employee.salary.toLocaleString('pt-BR', {
+                      {employee.salario.toLocaleString('pt-BR', {
                         minimumFractionDigits: 2,
                       })}
                     </TableCell>
                   )}
                   {visibleColumns.contractType && (
-                    <TableCell>{employee.contractType}</TableCell>
+                    <TableCell>{employee.tipo_contrato}</TableCell>
                   )}
                   <TableCell>
                     <Badge variant={getStatusColor(employee.status)}>

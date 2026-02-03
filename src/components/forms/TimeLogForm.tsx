@@ -32,20 +32,14 @@ export type TimeLogFormValues = z.infer<typeof formSchema>
 
 interface TimeLogFormProps {
   initialData?: TimeLogFormValues | null
+  employeesList: { id: string; name: string }[]
   onSubmit: (data: TimeLogFormValues) => void
   onCancel: () => void
 }
 
-const employees = [
-  'Ana Souza',
-  'Carlos Lima',
-  'Mariana Costa',
-  'Roberto Dias',
-  'João Pedro',
-]
-
 export function TimeLogForm({
   initialData,
+  employeesList,
   onSubmit,
   onCancel,
 }: TimeLogFormProps) {
@@ -83,9 +77,9 @@ export function TimeLogForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {employees.map((emp) => (
-                    <SelectItem key={emp} value={emp}>
-                      {emp}
+                  {employeesList.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

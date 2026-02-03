@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Upload, X, FileText, Plus } from 'lucide-react'
+import { Upload, X, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -23,19 +23,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Card, CardContent } from '@/components/ui/card'
 import { employeeSchema, type EmployeeFormValues } from './employee-schema'
+import { Employee } from '@/services/employees'
 
 interface EmployeeFormProps {
-  initialData?: EmployeeFormValues | null
-  onSubmit: (data: EmployeeFormValues) => void
+  initialData?:
+    | (EmployeeFormValues & {
+        id?: string
+        documentos_urls?: { name: string; url: string; size: string }[]
+      })
+    | null
+  onSubmit: (data: EmployeeFormValues, files: File[]) => void
   onCancel: () => void
+  isLoading?: boolean
 }
 
 export function EmployeeForm({
   initialData,
   onSubmit,
   onCancel,
+  isLoading,
 }: EmployeeFormProps) {
-  const [files, setFiles] = useState<{ name: string; size: string }[]>([])
+  const [files, setFiles] = useState<File[]>([])
+  const [existingFiles, setExistingFiles] = useState<
+    { name: string; url: string; size: string }[]
+  >([])
 
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
@@ -57,22 +68,16 @@ export function EmployeeForm({
   useEffect(() => {
     if (initialData) {
       form.reset(initialData)
-      // Mock existing files for edit mode
-      if (files.length === 0)
-        setFiles([
-          { name: 'contrato.pdf', size: '2.4 MB' },
-          { name: 'documento_id.png', size: '1.2 MB' },
-        ])
+      if (initialData.documentos_urls) {
+        setExistingFiles(initialData.documentos_urls)
+      }
     }
-  }, [initialData, form]) // Removed files from dep array to avoid loop
+  }, [initialData, form])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setFiles([
-        ...files,
-        { name: file.name, size: `${(file.size / 1024 / 1024).toFixed(2)} MB` },
-      ])
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
+      setFiles((prev) => [...prev, ...newFiles])
     }
   }
 
@@ -80,9 +85,13 @@ export function EmployeeForm({
     setFiles(files.filter((_, i) => i !== index))
   }
 
+  const handleSubmit = (data: EmployeeFormValues) => {
+    onSubmit(data, files)
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <Tabs defaultValue="personal" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
@@ -313,6 +322,7 @@ export function EmployeeForm({
                   id="file-upload"
                   onChange={handleFileChange}
                   accept=".pdf,.png,.jpg,.jpeg"
+                  multiple
                 />
                 <Button
                   type="button"
@@ -325,18 +335,42 @@ export function EmployeeForm({
                 </Button>
               </CardContent>
             </Card>
+
             <div className="space-y-2">
-              {files.map((file, i) => (
+              {existingFiles.map((file, i) => (
                 <div
-                  key={i}
+                  key={`existing-${i}`}
                   className="flex items-center justify-between p-3 border rounded-md bg-muted/30"
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5 text-blue-500" />
                     <div>
-                      <p className="text-sm font-medium">{file.name}</p>
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium hover:underline"
+                      >
+                        {file.name}
+                      </a>
                       <p className="text-xs text-muted-foreground">
                         {file.size}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {files.map((file, i) => (
+                <div
+                  key={`new-${i}`}
+                  className="flex items-center justify-between p-3 border rounded-md bg-muted/30"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="text-sm font-medium">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
                   </div>
@@ -354,10 +388,18 @@ export function EmployeeForm({
           </TabsContent>
         </Tabs>
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             Cancelar
           </Button>
-          <Button type="submit">Salvar Colaborador</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading && <span className="animate-spin mr-2">⏳</span>}
+            Salvar Colaborador
+          </Button>
         </div>
       </form>
     </Form>

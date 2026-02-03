@@ -31,14 +31,14 @@ export type VacationFormValues = z.infer<typeof formSchema>
 
 interface VacationFormProps {
   initialData?: VacationFormValues | null
+  employeesList: { id: string; name: string }[]
   onSubmit: (data: VacationFormValues) => void
   onCancel: () => void
 }
 
-const employees = ['Ana Souza', 'Carlos Lima', 'Mariana Costa', 'Roberto Dias']
-
 export function VacationForm({
   initialData,
+  employeesList,
   onSubmit,
   onCancel,
 }: VacationFormProps) {
@@ -76,9 +76,9 @@ export function VacationForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {employees.map((emp) => (
-                    <SelectItem key={emp} value={emp}>
-                      {emp}
+                  {employeesList.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

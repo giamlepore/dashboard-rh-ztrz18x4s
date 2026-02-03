@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -34,63 +34,92 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-
-interface VacationRequest extends VacationFormValues {
-  id: number
-}
-
-const initialRequests: VacationRequest[] = [
-  {
-    id: 1,
-    employee: 'Mariana Costa',
-    startDate: new Date('2026-03-01'),
-    endDate: new Date('2026-03-30'),
-    status: 'Pendente',
-  },
-  {
-    id: 2,
-    employee: 'Lucas Pereira',
-    startDate: new Date('2026-04-15'),
-    endDate: new Date('2026-04-30'),
-    status: 'Aprovada',
-  },
-]
+import {
+  getVacations,
+  createVacation,
+  updateVacation,
+  deleteVacation,
+  Vacation,
+} from '@/services/vacations'
+import { getEmployees, Employee } from '@/services/employees'
 
 export default function Ferias() {
-  const [requests, setRequests] = useState<VacationRequest[]>(initialRequests)
+  const [requests, setRequests] = useState<Vacation[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingRequest, setEditingRequest] = useState<VacationRequest | null>(
-    null,
-  )
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [editingRequest, setEditingRequest] = useState<Vacation | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const handleSubmit = (data: VacationFormValues) => {
-    if (editingRequest) {
-      setRequests(
-        requests.map((r) =>
-          r.id === editingRequest.id ? { ...r, ...data } : r,
-        ),
-      )
+  const fetchData = async () => {
+    try {
+      const [vacationsData, employeesData] = await Promise.all([
+        getVacations(),
+        getEmployees(),
+      ])
+      setRequests(vacationsData)
+      setEmployees(employeesData)
+    } catch (error) {
+      console.error(error)
       toast({
-        title: 'Solicitação atualizada',
-        description: 'Férias atualizadas com sucesso.',
-      })
-    } else {
-      setRequests([...requests, { ...data, id: Date.now() }])
-      toast({
-        title: 'Solicitação criada',
-        description: 'Férias solicitadas com sucesso.',
+        title: 'Erro',
+        description: 'Erro ao carregar dados.',
+        variant: 'destructive',
       })
     }
-    setIsDialogOpen(false)
-    setEditingRequest(null)
   }
 
-  const handleDelete = () => {
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const handleSubmit = async (data: VacationFormValues) => {
+    try {
+      const vacationData = {
+        colaborador_id: data.employee,
+        data_inicio: format(data.startDate, 'yyyy-MM-dd'),
+        data_fim: format(data.endDate, 'yyyy-MM-dd'),
+        status: data.status,
+      }
+
+      if (editingRequest) {
+        await updateVacation(editingRequest.id, vacationData)
+        toast({ title: 'Sucesso', description: 'Solicitação atualizada.' })
+      } else {
+        await createVacation(vacationData)
+        toast({ title: 'Sucesso', description: 'Solicitação criada.' })
+      }
+      setIsDialogOpen(false)
+      setEditingRequest(null)
+      fetchData()
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro',
+        description: 'Erro ao salvar solicitação.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDelete = async () => {
     if (deletingId) {
-      setRequests(requests.filter((r) => r.id !== deletingId))
-      toast({ title: 'Solicitação removida', variant: 'destructive' })
+      try {
+        await deleteVacation(deletingId)
+        fetchData()
+        toast({
+          title: 'Removido',
+          description: 'Solicitação removida.',
+          variant: 'destructive',
+        })
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: 'Erro',
+          description: 'Erro ao remover.',
+          variant: 'destructive',
+        })
+      }
       setDeletingId(null)
     }
   }
@@ -98,13 +127,20 @@ export default function Ferias() {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Aprovada':
-        return 'default' // Using default (primary) for approved
+        return 'default'
       case 'Reprovada':
         return 'destructive'
       default:
         return 'secondary'
     }
   }
+
+  const mapToForm = (req: Vacation): VacationFormValues => ({
+    employee: req.colaborador_id,
+    startDate: new Date(req.data_inicio),
+    endDate: new Date(req.data_fim),
+    status: req.status as any,
+  })
 
   return (
     <div className="p-6 md:p-8 space-y-6 animate-fade-in">
@@ -136,7 +172,8 @@ export default function Ferias() {
               </DialogTitle>
             </DialogHeader>
             <VacationForm
-              initialData={editingRequest}
+              initialData={editingRequest ? mapToForm(editingRequest) : null}
+              employeesList={employees.map((e) => ({ id: e.id, name: e.nome }))}
               onSubmit={handleSubmit}
               onCancel={() => setIsDialogOpen(false)}
             />
@@ -159,13 +196,17 @@ export default function Ferias() {
             {requests.map((request) => (
               <TableRow key={request.id}>
                 <TableCell className="font-medium">
-                  {request.employee}
+                  {request.colaboradores?.nome || 'Desconhecido'}
                 </TableCell>
                 <TableCell>
-                  {format(request.startDate, 'dd/MM/yyyy', { locale: ptBR })}
+                  {format(new Date(request.data_inicio), 'dd/MM/yyyy', {
+                    locale: ptBR,
+                  })}
                 </TableCell>
                 <TableCell>
-                  {format(request.endDate, 'dd/MM/yyyy', { locale: ptBR })}
+                  {format(new Date(request.data_fim), 'dd/MM/yyyy', {
+                    locale: ptBR,
+                  })}
                 </TableCell>
                 <TableCell>
                   <Badge

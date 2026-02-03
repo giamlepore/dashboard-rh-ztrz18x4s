@@ -11,7 +11,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
 import {
   DropdownMenu,
@@ -19,6 +18,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
+import { useAuth } from '@/hooks/use-auth'
 
 const suggestions = [
   {
@@ -54,11 +54,15 @@ const suggestions = [
 export default function Index() {
   const navigate = useNavigate()
   const [searchValue, setSearchValue] = useState('')
+  const { user } = useAuth()
+
+  // Use email user part as name if metadata not available
+  const userName =
+    user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchValue.trim()) {
-      // Logic to route based on search or pass state
       console.log('Searching for:', searchValue)
     }
   }
@@ -67,8 +71,8 @@ export default function Index() {
     <div className="flex h-full flex-col items-center justify-center p-6 md:p-12 animate-fade-in">
       <div className="w-full max-w-3xl space-y-8 text-center">
         <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-            Olá, Giam!
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground capitalize">
+            Olá, {userName}!
           </h1>
           <p className="text-lg text-muted-foreground">
             O que você deseja gerenciar hoje? Escolha um módulo ou pesquise

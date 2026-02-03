@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -30,60 +30,102 @@ import { TimeLogForm, TimeLogFormValues } from '@/components/forms/TimeLogForm'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-
-interface TimeLog extends TimeLogFormValues {
-  id: number
-}
-
-const initialLogs: TimeLog[] = [
-  {
-    id: 1,
-    employee: 'Ana Souza',
-    date: new Date(),
-    entry: '09:00',
-    exit: '18:00',
-  },
-  {
-    id: 2,
-    employee: 'Carlos Lima',
-    date: new Date(),
-    entry: '09:15',
-    exit: '18:15',
-  },
-]
+import {
+  getTimeLogs,
+  createTimeLog,
+  updateTimeLog,
+  deleteTimeLog,
+  TimeLog,
+} from '@/services/time-logs'
+import { getEmployees, Employee } from '@/services/employees'
 
 export default function Ponto() {
-  const [logs, setLogs] = useState<TimeLog[]>(initialLogs)
+  const [logs, setLogs] = useState<TimeLog[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingLog, setEditingLog] = useState<TimeLog | null>(null)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const handleSubmit = (data: TimeLogFormValues) => {
-    if (editingLog) {
-      setLogs(logs.map((l) => (l.id === editingLog.id ? { ...l, ...data } : l)))
+  const fetchData = async () => {
+    try {
+      const [logsData, employeesData] = await Promise.all([
+        getTimeLogs(),
+        getEmployees(),
+      ])
+      setLogs(logsData)
+      setEmployees(employeesData)
+    } catch (error) {
+      console.error(error)
       toast({
-        title: 'Registro atualizado',
-        description: 'Ponto atualizado com sucesso.',
-      })
-    } else {
-      setLogs([...logs, { ...data, id: Date.now() }])
-      toast({
-        title: 'Registro criado',
-        description: 'Ponto registrado com sucesso.',
+        title: 'Erro',
+        description: 'Erro ao carregar dados.',
+        variant: 'destructive',
       })
     }
-    setIsDialogOpen(false)
-    setEditingLog(null)
   }
 
-  const handleDelete = () => {
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const handleSubmit = async (data: TimeLogFormValues) => {
+    try {
+      const logData = {
+        colaborador_id: data.employee,
+        data: format(data.date, 'yyyy-MM-dd'),
+        hora_entrada: data.entry,
+        hora_saida: data.exit,
+      }
+
+      if (editingLog) {
+        await updateTimeLog(editingLog.id, logData)
+        toast({ title: 'Sucesso', description: 'Ponto atualizado.' })
+      } else {
+        await createTimeLog(logData)
+        toast({ title: 'Sucesso', description: 'Ponto registrado.' })
+      }
+      setIsDialogOpen(false)
+      setEditingLog(null)
+      fetchData()
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro',
+        description: 'Erro ao salvar registro.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDelete = async () => {
     if (deletingId) {
-      setLogs(logs.filter((l) => l.id !== deletingId))
-      toast({ title: 'Registro excluído', variant: 'destructive' })
+      try {
+        await deleteTimeLog(deletingId)
+        fetchData()
+        toast({
+          title: 'Excluído',
+          description: 'Registro excluído.',
+          variant: 'destructive',
+        })
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: 'Erro',
+          description: 'Erro ao excluir.',
+          variant: 'destructive',
+        })
+      }
       setDeletingId(null)
     }
   }
+
+  const mapToForm = (log: TimeLog): TimeLogFormValues => ({
+    employee: log.colaborador_id,
+    date: new Date(log.data),
+    entry: log.hora_entrada,
+    exit: log.hora_saida,
+  })
 
   return (
     <div className="p-6 md:p-8 space-y-6 animate-fade-in-up">
@@ -115,7 +157,8 @@ export default function Ponto() {
               </DialogTitle>
             </DialogHeader>
             <TimeLogForm
-              initialData={editingLog}
+              initialData={editingLog ? mapToForm(editingLog) : null}
+              employeesList={employees.map((e) => ({ id: e.id, name: e.nome }))}
               onSubmit={handleSubmit}
               onCancel={() => setIsDialogOpen(false)}
             />
@@ -137,12 +180,14 @@ export default function Ponto() {
           <TableBody>
             {logs.map((log) => (
               <TableRow key={log.id}>
-                <TableCell className="font-medium">{log.employee}</TableCell>
-                <TableCell>
-                  {format(log.date, 'dd/MM/yyyy', { locale: ptBR })}
+                <TableCell className="font-medium">
+                  {log.colaboradores?.nome || 'Desconhecido'}
                 </TableCell>
-                <TableCell>{log.entry}</TableCell>
-                <TableCell>{log.exit}</TableCell>
+                <TableCell>
+                  {format(new Date(log.data), 'dd/MM/yyyy', { locale: ptBR })}
+                </TableCell>
+                <TableCell>{log.hora_entrada}</TableCell>
+                <TableCell>{log.hora_saida}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button
                     variant="ghost"

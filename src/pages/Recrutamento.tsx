@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -33,78 +33,90 @@ import {
 } from '@/components/forms/CandidateForm'
 import { useToast } from '@/hooks/use-toast'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-
-interface Candidate extends CandidateFormValues {
-  id: number
-  image?: string
-}
-
-const initialCandidates: Candidate[] = [
-  {
-    id: 1,
-    name: 'Juliana Martins',
-    role: 'UX Designer',
-    status: 'Inscrito',
-    image: 'female',
-  },
-  {
-    id: 2,
-    name: 'Rafael Costa',
-    role: 'Dev Frontend',
-    status: 'Entrevista',
-    image: 'male',
-  },
-  {
-    id: 3,
-    name: 'Lucas Pereira',
-    role: 'Backend Dev',
-    status: 'Contratado',
-    image: 'male',
-  },
-]
+import {
+  getCandidates,
+  createCandidate,
+  updateCandidate,
+  deleteCandidate,
+  Candidate,
+} from '@/services/recruitment'
 
 export default function Recrutamento() {
-  const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates)
+  const [candidates, setCandidates] = useState<Candidate[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(
     null,
   )
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const handleSubmit = (data: CandidateFormValues) => {
-    if (editingCandidate) {
-      setCandidates(
-        candidates.map((c) =>
-          c.id === editingCandidate.id ? { ...c, ...data } : c,
-        ),
-      )
+  const fetchCandidates = async () => {
+    try {
+      const data = await getCandidates()
+      setCandidates(data)
+    } catch (error) {
+      console.error(error)
       toast({
-        title: 'Candidato atualizado',
-        description: `${data.name} atualizado.`,
-      })
-    } else {
-      setCandidates([
-        ...candidates,
-        {
-          ...data,
-          id: Date.now(),
-          image: Math.random() > 0.5 ? 'male' : 'female',
-        },
-      ])
-      toast({
-        title: 'Candidato adicionado',
-        description: `${data.name} adicionado.`,
+        title: 'Erro',
+        description: 'Erro ao carregar candidatos.',
+        variant: 'destructive',
       })
     }
-    setIsDialogOpen(false)
-    setEditingCandidate(null)
   }
 
-  const handleDelete = () => {
+  useEffect(() => {
+    fetchCandidates()
+  }, [])
+
+  const handleSubmit = async (data: CandidateFormValues) => {
+    try {
+      if (editingCandidate) {
+        await updateCandidate(editingCandidate.id, {
+          nome_candidato: data.name,
+          vaga: data.role,
+          status: data.status,
+        })
+        toast({ title: 'Sucesso', description: 'Candidato atualizado.' })
+      } else {
+        await createCandidate({
+          nome_candidato: data.name,
+          vaga: data.role,
+          status: data.status,
+          image_gender: Math.random() > 0.5 ? 'male' : 'female',
+        })
+        toast({ title: 'Sucesso', description: 'Candidato adicionado.' })
+      }
+      setIsDialogOpen(false)
+      setEditingCandidate(null)
+      fetchCandidates()
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro',
+        description: 'Erro ao salvar candidato.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDelete = async () => {
     if (deletingId) {
-      setCandidates(candidates.filter((c) => c.id !== deletingId))
-      toast({ title: 'Candidato removido', variant: 'destructive' })
+      try {
+        await deleteCandidate(deletingId)
+        fetchCandidates()
+        toast({
+          title: 'Sucesso',
+          description: 'Candidato removido.',
+          variant: 'destructive',
+        })
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: 'Erro',
+          description: 'Erro ao remover candidato.',
+          variant: 'destructive',
+        })
+      }
       setDeletingId(null)
     }
   }
@@ -121,6 +133,12 @@ export default function Recrutamento() {
         return 'outline'
     }
   }
+
+  const mapToForm = (c: Candidate): CandidateFormValues => ({
+    name: c.nome_candidato,
+    role: c.vaga,
+    status: c.status as any,
+  })
 
   return (
     <div className="p-6 md:p-8 space-y-6 animate-fade-in">
@@ -150,7 +168,9 @@ export default function Recrutamento() {
               </DialogTitle>
             </DialogHeader>
             <CandidateForm
-              initialData={editingCandidate}
+              initialData={
+                editingCandidate ? mapToForm(editingCandidate) : null
+              }
               onSubmit={handleSubmit}
               onCancel={() => setIsDialogOpen(false)}
             />
@@ -175,16 +195,18 @@ export default function Recrutamento() {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
-                        src={`https://img.usecurling.com/ppl/thumbnail?gender=${candidate.image}&seed=${candidate.id}`}
+                        src={`https://img.usecurling.com/ppl/thumbnail?gender=${candidate.image_gender}&seed=${candidate.id}`}
                       />
                       <AvatarFallback>
-                        {candidate.name.charAt(0)}
+                        {candidate.nome_candidato.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{candidate.name}</span>
+                    <span className="font-medium">
+                      {candidate.nome_candidato}
+                    </span>
                   </div>
                 </TableCell>
-                <TableCell>{candidate.role}</TableCell>
+                <TableCell>{candidate.vaga}</TableCell>
                 <TableCell>
                   <Badge variant={getBadgeVariant(candidate.status)}>
                     {candidate.status}
