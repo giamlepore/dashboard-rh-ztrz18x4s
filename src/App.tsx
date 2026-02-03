@@ -1,14 +1,16 @@
-/* Main App Component - Handles routing (using react-router-dom), query client and other providers - use this file to add all routes */
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import Index from './pages/Index'
-import NotFound from './pages/NotFound'
-import Layout from './components/Layout'
-
-// ONLY IMPORT AND RENDER WORKING PAGES, NEVER ADD PLACEHOLDER COMPONENTS OR PAGES IN THIS FILE
-// AVOID REMOVING ANY CONTEXT PROVIDERS FROM THIS FILE (e.g. TooltipProvider, Toaster, Sonner)
+import Layout from '@/components/Layout'
+import Index from '@/pages/Index'
+import NotFound from '@/pages/NotFound'
+import Colaboradores from '@/pages/Colaboradores'
+import Recrutamento from '@/pages/Recrutamento'
+import Ponto from '@/pages/Ponto'
+import Ferias from '@/pages/Ferias'
+import Avaliacoes from '@/pages/Avaliacoes'
+import Relatorios from '@/pages/Relatorios'
 
 const App = () => (
   <BrowserRouter
@@ -20,7 +22,12 @@ const App = () => (
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES MUST BE ADDED HERE */}
+          <Route path="/colaboradores" element={<Colaboradores />} />
+          <Route path="/recrutamento" element={<Recrutamento />} />
+          <Route path="/ponto" element={<Ponto />} />
+          <Route path="/ferias" element={<Ferias />} />
+          <Route path="/avaliacoes" element={<Avaliacoes />} />
+          <Route path="/relatorios" element={<Relatorios />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
