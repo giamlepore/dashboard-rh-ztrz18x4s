@@ -20,7 +20,7 @@ export default function Layout() {
         {/* Mobile Header for Sidebar Trigger */}
         <header className="flex h-14 items-center gap-2 border-b bg-background px-4 md:hidden">
           <SidebarTrigger />
-          <span className="font-semibold">ADAPTAONE</span>
+          <span className="font-semibold">ADAPTARH</span>
         </header>
 
         {/* Content */}

@@ -99,7 +99,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4 gap-4">
         <div className="flex items-center justify-between">
           <span className="text-lg font-semibold tracking-tight text-foreground/90 group-data-[collapsible=icon]:hidden">
-            ADAPTAONE
+            ADAPTARH
           </span>
         </div>
         <div className="relative group-data-[collapsible=icon]:hidden">
@@ -169,7 +169,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden">
         <div className="text-[10px] text-center text-muted-foreground">
-          ADAPTAONE v2.6 &copy; 2026
+          ADAPTARH v2.6 &copy; 2026
         </div>
       </SidebarFooter>
     </Sidebar>
