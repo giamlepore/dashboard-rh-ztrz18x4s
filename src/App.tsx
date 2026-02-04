@@ -14,6 +14,9 @@ import Ferias from '@/pages/Ferias'
 import Avaliacoes from '@/pages/Avaliacoes'
 import Relatorios from '@/pages/Relatorios'
 import Login from '@/pages/Login'
+import SignUp from '@/pages/SignUp'
+import CompleteProfile from '@/pages/CompleteProfile'
+import VisitorDashboard from '@/pages/VisitorDashboard'
 import { AuthProvider } from '@/hooks/use-auth'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
@@ -27,6 +30,29 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+
+          {/* Initial Profile Completion Step */}
+          <Route
+            path="/complete-profile"
+            element={
+              <ProtectedRoute>
+                <CompleteProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Visitor View */}
+          <Route
+            path="/visitor"
+            element={
+              <ProtectedRoute>
+                <VisitorDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Main App Routes */}
           <Route
             element={
               <ProtectedRoute>

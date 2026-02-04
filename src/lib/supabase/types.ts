@@ -30,10 +30,12 @@ export type Database = {
           image_gender: string | null
           nome: string
           rg: string | null
+          role: string
           salario: number | null
           status: string | null
           telefone: string | null
           tipo_contrato: string | null
+          user_id: string | null
         }
         Insert: {
           cargo?: string | null
@@ -49,10 +51,12 @@ export type Database = {
           image_gender?: string | null
           nome: string
           rg?: string | null
+          role?: string
           salario?: number | null
           status?: string | null
           telefone?: string | null
           tipo_contrato?: string | null
+          user_id?: string | null
         }
         Update: {
           cargo?: string | null
@@ -68,10 +72,12 @@ export type Database = {
           image_gender?: string | null
           nome?: string
           rg?: string | null
+          role?: string
           salario?: number | null
           status?: string | null
           telefone?: string | null
           tipo_contrato?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

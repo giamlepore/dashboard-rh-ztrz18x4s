@@ -17,7 +17,7 @@ export interface Employee {
   status: string
   documentos_urls: { name: string; url: string; size: string }[]
   image_gender: string
-  role: 'Admin' | 'Gerente' | 'Colaborador'
+  role: 'Admin' | 'Gerente' | 'Colaborador' | 'visitante'
   user_id: string | null
 }
 
