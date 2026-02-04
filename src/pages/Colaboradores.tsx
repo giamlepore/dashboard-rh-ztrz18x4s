@@ -109,12 +109,6 @@ export default function Colaboradores() {
     try {
       let uploadedDocs = editingEmployee?.documentos_urls || []
 
-      // This assumes we create the employee first to get ID, then upload documents, then update employee.
-      // Or for update, we just upload and update.
-      // For create, we need an ID for the path. We can use a temp ID or just UUID from DB.
-      // Simplified: We use a generic 'temp' or handle it properly.
-      // Better: Create employee, get ID. Then upload. Then update employee with URLs.
-
       const empData = {
         nome: data.name,
         cpf: data.cpf,
@@ -153,19 +147,39 @@ export default function Colaboradores() {
       }
 
       if (files.length > 0 && empId) {
+        toast({
+          title: 'Enviando documentos...',
+          description: `Fazendo upload de ${files.length} arquivos.`,
+        })
+
         const newUploads = await Promise.all(
           files.map(async (file) => {
-            const url = await uploadDocument(file, empId!)
-            return {
-              name: file.name,
-              url,
-              size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+            try {
+              const url = await uploadDocument(file, empId!)
+              return {
+                name: file.name,
+                url,
+                size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+              }
+            } catch (error) {
+              console.error(`Erro ao enviar arquivo ${file.name}:`, error)
+              toast({
+                title: 'Erro no upload',
+                description: `Falha ao enviar ${file.name}.`,
+                variant: 'destructive',
+              })
+              throw error
             }
           }),
         )
 
         const finalDocs = [...uploadedDocs, ...newUploads]
         await updateEmployee(empId, { documentos_urls: finalDocs })
+
+        toast({
+          title: 'Documentos salvos',
+          description: 'Todos os documentos foram anexados com sucesso.',
+        })
       }
 
       await fetchEmployees()
@@ -175,7 +189,7 @@ export default function Colaboradores() {
       console.error(error)
       toast({
         title: 'Erro ao salvar',
-        description: 'Ocorreu um erro ao salvar o colaborador.',
+        description: 'Ocorreu um erro ao salvar o colaborador ou documentos.',
         variant: 'destructive',
       })
     } finally {

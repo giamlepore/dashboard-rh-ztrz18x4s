@@ -62,12 +62,20 @@ export const deleteEmployee = async (id: string) => {
 }
 
 export const uploadDocument = async (file: File, employeeId: string) => {
+  // Supabase Client automatically includes 'apikey' and 'Authorization' headers
   const timestamp = new Date().getTime()
-  const filePath = `${employeeId}/${timestamp}_${file.name}`
+  // Add random string to ensure uniqueness and avoid overwriting
+  const randomString = Math.random().toString(36).substring(2, 15)
+  // Sanitize filename
+  const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+  const filePath = `${employeeId}/${timestamp}_${randomString}_${sanitizedName}`
 
   const { error } = await supabase.storage
     .from('documents')
-    .upload(filePath, file)
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
 
   if (error) throw error
 

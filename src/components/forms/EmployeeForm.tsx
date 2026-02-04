@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Upload, X, FileText } from 'lucide-react'
@@ -47,6 +47,7 @@ export function EmployeeForm({
   const [existingFiles, setExistingFiles] = useState<
     { name: string; url: string; size: string }[]
   >([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
@@ -320,6 +321,7 @@ export function EmployeeForm({
                   type="file"
                   className="hidden"
                   id="file-upload"
+                  ref={fileInputRef}
                   onChange={handleFileChange}
                   accept=".pdf,.png,.jpg,.jpeg"
                   multiple
@@ -327,9 +329,7 @@ export function EmployeeForm({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() =>
-                    document.getElementById('file-upload')?.click()
-                  }
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   Selecionar Arquivo
                 </Button>

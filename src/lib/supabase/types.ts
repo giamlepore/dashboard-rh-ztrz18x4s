@@ -15,7 +15,163 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      colaboradores: {
+        Row: {
+          cargo: string | null
+          cpf: string | null
+          created_at: string
+          data_admissao: string | null
+          data_nascimento: string | null
+          departamento: string | null
+          documentos_urls: Json | null
+          email: string | null
+          endereco: string | null
+          id: string
+          image_gender: string | null
+          nome: string
+          rg: string | null
+          salario: number | null
+          status: string | null
+          telefone: string | null
+          tipo_contrato: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_admissao?: string | null
+          data_nascimento?: string | null
+          departamento?: string | null
+          documentos_urls?: Json | null
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          image_gender?: string | null
+          nome: string
+          rg?: string | null
+          salario?: number | null
+          status?: string | null
+          telefone?: string | null
+          tipo_contrato?: string | null
+        }
+        Update: {
+          cargo?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_admissao?: string | null
+          data_nascimento?: string | null
+          departamento?: string | null
+          documentos_urls?: Json | null
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          image_gender?: string | null
+          nome?: string
+          rg?: string | null
+          salario?: number | null
+          status?: string | null
+          telefone?: string | null
+          tipo_contrato?: string | null
+        }
+        Relationships: []
+      }
+      ferias: {
+        Row: {
+          colaborador_id: string | null
+          created_at: string
+          data_fim: string
+          data_inicio: string
+          id: string
+          status: string | null
+        }
+        Insert: {
+          colaborador_id?: string | null
+          created_at?: string
+          data_fim: string
+          data_inicio: string
+          id?: string
+          status?: string | null
+        }
+        Update: {
+          colaborador_id?: string | null
+          created_at?: string
+          data_fim?: string
+          data_inicio?: string
+          id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'ferias_colaborador_id_fkey'
+            columns: ['colaborador_id']
+            isOneToOne: false
+            referencedRelation: 'colaboradores'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      ponto: {
+        Row: {
+          colaborador_id: string | null
+          created_at: string
+          data: string
+          hora_entrada: string | null
+          hora_saida: string | null
+          id: string
+        }
+        Insert: {
+          colaborador_id?: string | null
+          created_at?: string
+          data: string
+          hora_entrada?: string | null
+          hora_saida?: string | null
+          id?: string
+        }
+        Update: {
+          colaborador_id?: string | null
+          created_at?: string
+          data?: string
+          hora_entrada?: string | null
+          hora_saida?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'ponto_colaborador_id_fkey'
+            columns: ['colaborador_id']
+            isOneToOne: false
+            referencedRelation: 'colaboradores'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      recrutamento: {
+        Row: {
+          created_at: string
+          id: string
+          image_gender: string | null
+          nome_candidato: string
+          status: string
+          vaga: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_gender?: string | null
+          nome_candidato: string
+          status: string
+          vaga: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_gender?: string | null
+          nome_candidato?: string
+          status?: string
+          vaga?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
