@@ -1,259 +1,72 @@
-import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Briefcase, Users, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
-import {
-  CandidateForm,
-  CandidateFormValues,
-} from '@/components/forms/CandidateForm'
-import { useToast } from '@/hooks/use-toast'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  getCandidates,
-  createCandidate,
-  updateCandidate,
-  deleteCandidate,
-  Candidate,
-} from '@/services/recruitment'
 
 export default function Recrutamento() {
-  const [candidates, setCandidates] = useState<Candidate[]>([])
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(
-    null,
-  )
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const { toast } = useToast()
-
-  const fetchCandidates = async () => {
-    try {
-      const data = await getCandidates()
-      setCandidates(data)
-    } catch (error) {
-      console.error(error)
-      toast({
-        title: 'Erro',
-        description: 'Erro ao carregar candidatos.',
-        variant: 'destructive',
-      })
-    }
-  }
-
-  useEffect(() => {
-    fetchCandidates()
-  }, [])
-
-  const handleSubmit = async (data: CandidateFormValues) => {
-    try {
-      if (editingCandidate) {
-        await updateCandidate(editingCandidate.id, {
-          nome_candidato: data.name,
-          vaga: data.role,
-          status: data.status,
-        })
-        toast({ title: 'Sucesso', description: 'Candidato atualizado.' })
-      } else {
-        await createCandidate({
-          nome_candidato: data.name,
-          vaga: data.role,
-          status: data.status,
-          image_gender: Math.random() > 0.5 ? 'male' : 'female',
-        })
-        toast({ title: 'Sucesso', description: 'Candidato adicionado.' })
-      }
-      setIsDialogOpen(false)
-      setEditingCandidate(null)
-      fetchCandidates()
-    } catch (error) {
-      console.error(error)
-      toast({
-        title: 'Erro',
-        description: 'Erro ao salvar candidato.',
-        variant: 'destructive',
-      })
-    }
-  }
-
-  const handleDelete = async () => {
-    if (deletingId) {
-      try {
-        await deleteCandidate(deletingId)
-        fetchCandidates()
-        toast({
-          title: 'Sucesso',
-          description: 'Candidato removido.',
-          variant: 'destructive',
-        })
-      } catch (error) {
-        console.error(error)
-        toast({
-          title: 'Erro',
-          description: 'Erro ao remover candidato.',
-          variant: 'destructive',
-        })
-      }
-      setDeletingId(null)
-    }
-  }
-
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Contratado':
-        return 'default'
-      case 'Recusado':
-        return 'destructive'
-      case 'Entrevista':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
-
-  const mapToForm = (c: Candidate): CandidateFormValues => ({
-    name: c.nome_candidato,
-    role: c.vaga,
-    status: c.status as any,
-  })
+  const navigate = useNavigate()
 
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Recrutamento</h1>
-          <p className="text-muted-foreground text-sm">
-            Gerencie o pipeline de contratação.
+    <div className="p-6 md:p-12 animate-fade-in flex flex-col items-center justify-center min-h-[80vh]">
+      <div className="max-w-4xl w-full space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Recrutamento e Seleção
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Gerencie suas vagas e acompanhe seus candidatos em um só lugar.
           </p>
         </div>
-        <Dialog
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open)
-            if (!open) setEditingCandidate(null)
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Adicionar Candidato
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingCandidate ? 'Editar Candidato' : 'Novo Candidato'}
-              </DialogTitle>
-            </DialogHeader>
-            <CandidateForm
-              initialData={
-                editingCandidate ? mapToForm(editingCandidate) : null
-              }
-              onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Candidato</TableHead>
-              <TableHead>Vaga</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {candidates.map((candidate) => (
-              <TableRow key={candidate.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={`https://img.usecurling.com/ppl/thumbnail?gender=${candidate.image_gender}&seed=${candidate.id}`}
-                      />
-                      <AvatarFallback>
-                        {candidate.nome_candidato.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">
-                      {candidate.nome_candidato}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>{candidate.vaga}</TableCell>
-                <TableCell>
-                  <Badge variant={getBadgeVariant(candidate.status)}>
-                    {candidate.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setEditingCandidate(candidate)
-                      setIsDialogOpen(true)
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-500"
-                    onClick={() => setDeletingId(candidate.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card
+            className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-border/60 hover:border-primary/50"
+            onClick={() => navigate('/recrutamento/vagas')}
+          >
+            <CardHeader>
+              <div className="h-12 w-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Briefcase className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-xl">Gestão de Vagas</CardTitle>
+              <CardDescription>
+                Crie, edite e gerencie as oportunidades abertas na empresa.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="ghost" className="p-0 group-hover:text-primary">
+                Acessar Vagas <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
 
-      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir candidato?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação é irreversível.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <Card
+            className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-border/60 hover:border-primary/50"
+            onClick={() => navigate('/recrutamento/candidatos')}
+          >
+            <CardHeader>
+              <div className="h-12 w-12 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Users className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-xl">Base de Candidatos</CardTitle>
+              <CardDescription>
+                Visualize todos os candidatos, currículos e controle as etapas
+                do processo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="ghost" className="p-0 group-hover:text-primary">
+                Acessar Candidatos <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

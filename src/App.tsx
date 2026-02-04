@@ -7,6 +7,8 @@ import Index from '@/pages/Index'
 import NotFound from '@/pages/NotFound'
 import Colaboradores from '@/pages/Colaboradores'
 import Recrutamento from '@/pages/Recrutamento'
+import Vagas from '@/pages/recrutamento/Vagas'
+import Candidatos from '@/pages/recrutamento/Candidatos'
 import Ponto from '@/pages/Ponto'
 import Ferias from '@/pages/Ferias'
 import Avaliacoes from '@/pages/Avaliacoes'
@@ -34,7 +36,12 @@ const App = () => (
           >
             <Route path="/" element={<Index />} />
             <Route path="/colaboradores" element={<Colaboradores />} />
+
+            {/* Recruitment Routes */}
             <Route path="/recrutamento" element={<Recrutamento />} />
+            <Route path="/recrutamento/vagas" element={<Vagas />} />
+            <Route path="/recrutamento/candidatos" element={<Candidatos />} />
+
             <Route path="/ponto" element={<Ponto />} />
             <Route path="/ferias" element={<Ferias />} />
             <Route path="/avaliacoes" element={<Avaliacoes />} />

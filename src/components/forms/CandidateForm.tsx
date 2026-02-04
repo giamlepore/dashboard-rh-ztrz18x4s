@@ -18,18 +18,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Candidate } from '@/services/recruitment'
+import { getJobs, Job } from '@/services/jobs'
+import { Loader2 } from 'lucide-react'
 
 const formSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  role: z.string().min(2, 'Vaga obrigatória'),
-  status: z.enum(['Inscrito', 'Entrevista', 'Contratado', 'Recusado']),
+  email: z.string().email('Email inválido'),
+  phone: z.string().min(8, 'Telefone inválido'),
+  vaga_id: z.string().min(1, 'Vaga obrigatória'),
+  status: z.enum(['Triagem', 'Entrevista', 'Aprovado', 'Reprovado']),
 })
 
 export type CandidateFormValues = z.infer<typeof formSchema>
 
 interface CandidateFormProps {
-  initialData?: CandidateFormValues | null
+  initialData?: Candidate | null
   onSubmit: (data: CandidateFormValues) => void
   onCancel: () => void
 }
@@ -39,20 +44,48 @@ export function CandidateForm({
   onSubmit,
   onCancel,
 }: CandidateFormProps) {
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [loadingJobs, setLoadingJobs] = useState(false)
+
   const form = useForm<CandidateFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      role: '',
-      status: 'Inscrito',
+      email: '',
+      phone: '',
+      vaga_id: '',
+      status: 'Triagem',
     },
   })
 
   useEffect(() => {
+    const fetchJobs = async () => {
+      setLoadingJobs(true)
+      try {
+        const data = await getJobs()
+        setJobs(
+          data.filter(
+            (j) => j.status === 'Aberta' || initialData?.vaga_id === j.id,
+          ),
+        )
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoadingJobs(false)
+      }
+    }
+    fetchJobs()
+  }, [initialData])
+
+  useEffect(() => {
     if (initialData) {
-      form.reset(initialData)
-    } else {
-      form.reset({ name: '', role: '', status: 'Inscrito' })
+      form.reset({
+        name: initialData.nome_candidato,
+        email: initialData.email || '',
+        phone: initialData.telefone || '',
+        vaga_id: initialData.vaga_id || '',
+        status: (initialData.status as any) || 'Triagem',
+      })
     }
   }, [initialData, form])
 
@@ -72,36 +105,86 @@ export function CandidateForm({
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="candidato@email.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefone</FormLabel>
+                <FormControl>
+                  <Input placeholder="(00) 00000-0000" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
-          name="role"
+          name="vaga_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Vaga</FormLabel>
-              <FormControl>
-                <Input placeholder="Ex: Frontend Developer" {...field} />
-              </FormControl>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={loadingJobs}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        loadingJobs ? 'Carregando vagas...' : 'Selecione a vaga'
+                      }
+                    />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {jobs.map((job) => (
+                    <SelectItem key={job.id} value={job.id}>
+                      {job.titulo} ({job.departamento})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormLabel>Etapa do Processo</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o status" />
+                    <SelectValue placeholder="Selecione a etapa" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Inscrito">Inscrito</SelectItem>
+                  <SelectItem value="Triagem">Triagem</SelectItem>
                   <SelectItem value="Entrevista">Entrevista</SelectItem>
-                  <SelectItem value="Contratado">Contratado</SelectItem>
-                  <SelectItem value="Recusado">Recusado</SelectItem>
+                  <SelectItem value="Aprovado">Aprovado</SelectItem>
+                  <SelectItem value="Reprovado">Reprovado</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -112,7 +195,7 @@ export function CandidateForm({
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button type="submit">Salvar</Button>
+          <Button type="submit">Salvar Candidato</Button>
         </div>
       </form>
     </Form>
