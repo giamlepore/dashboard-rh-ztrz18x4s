@@ -15,6 +15,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      avaliacoes: {
+        Row: {
+          avaliador_id: string | null
+          colaborador_id: string
+          created_at: string
+          id: string
+          nota_pontualidade: number
+          nota_qualidade: number
+          nota_trabalho_equipe: number
+          observacoes: string | null
+          periodo: string
+        }
+        Insert: {
+          avaliador_id?: string | null
+          colaborador_id: string
+          created_at?: string
+          id?: string
+          nota_pontualidade: number
+          nota_qualidade: number
+          nota_trabalho_equipe: number
+          observacoes?: string | null
+          periodo: string
+        }
+        Update: {
+          avaliador_id?: string | null
+          colaborador_id?: string
+          created_at?: string
+          id?: string
+          nota_pontualidade?: number
+          nota_qualidade?: number
+          nota_trabalho_equipe?: number
+          observacoes?: string | null
+          periodo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'fk_avaliacoes_avaliador'
+            columns: ['avaliador_id']
+            isOneToOne: false
+            referencedRelation: 'colaboradores'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'fk_avaliacoes_colaborador'
+            columns: ['colaborador_id']
+            isOneToOne: false
+            referencedRelation: 'colaboradores'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       colaboradores: {
         Row: {
           cargo: string | null
@@ -88,6 +139,7 @@ export type Database = {
           data_fim: string
           data_inicio: string
           id: string
+          observacoes: string | null
           status: string | null
         }
         Insert: {
@@ -96,6 +148,7 @@ export type Database = {
           data_fim: string
           data_inicio: string
           id?: string
+          observacoes?: string | null
           status?: string | null
         }
         Update: {
@@ -104,6 +157,7 @@ export type Database = {
           data_fim?: string
           data_inicio?: string
           id?: string
+          observacoes?: string | null
           status?: string | null
         }
         Relationships: [

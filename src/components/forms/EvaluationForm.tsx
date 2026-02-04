@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Form,
   FormControl,
@@ -27,6 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { StarRating } from '@/components/ui/star-rating'
 import {
   evaluationSchema,
   type EvaluationFormValues,
@@ -74,25 +74,11 @@ export function EvaluationForm({
         <FormItem className="space-y-3">
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <RadioGroup
-              onValueChange={field.onChange}
-              defaultValue={field.value?.toString()}
-              className="flex gap-4"
-            >
-              {[1, 2, 3, 4, 5].map((val) => (
-                <FormItem
-                  key={val}
-                  className="flex items-center space-x-2 space-y-0"
-                >
-                  <FormControl>
-                    <RadioGroupItem value={val.toString()} />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">
-                    {val}
-                  </FormLabel>
-                </FormItem>
-              ))}
-            </RadioGroup>
+            <StarRating
+              value={field.value}
+              onChange={field.onChange}
+              className="mt-1"
+            />
           </FormControl>
           <FormMessage />
         </FormItem>
@@ -246,7 +232,7 @@ export function EvaluationForm({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 border rounded-lg bg-muted/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 border rounded-lg bg-muted/10">
           <RatingField name="notaPontualidade" label="Pontualidade" />
           <RatingField name="notaQualidade" label="Qualidade" />
           <RatingField name="notaTrabalhoEquipe" label="Trabalho em Equipe" />

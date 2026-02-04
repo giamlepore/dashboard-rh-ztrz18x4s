@@ -37,6 +37,7 @@ import {
 } from '@/services/evaluations'
 import { EvaluationForm } from '@/components/forms/EvaluationForm'
 import { type EvaluationFormValues } from '@/components/forms/evaluation-schema'
+import { StarRating } from '@/components/ui/star-rating'
 
 export default function Avaliacoes() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([])
@@ -128,12 +129,6 @@ export default function Avaliacoes() {
         variant: 'destructive',
       })
     }
-  }
-
-  const getScoreColor = (score: number) => {
-    if (score >= 4) return 'bg-emerald-500 hover:bg-emerald-600'
-    if (score >= 3) return 'bg-amber-500 hover:bg-amber-600'
-    return 'bg-red-500 hover:bg-red-600'
   }
 
   const filteredEvaluations = evaluations.filter(
@@ -231,30 +226,29 @@ export default function Avaliacoes() {
                         <TableCell>
                           <Badge variant="outline">{evaluation.periodo}</Badge>
                         </TableCell>
-                        <TableCell className="text-center">
-                          <Badge
-                            className={getScoreColor(
-                              evaluation.nota_pontualidade,
-                            )}
-                          >
-                            {evaluation.nota_pontualidade}
-                          </Badge>
+                        <TableCell>
+                          <div className="flex justify-center">
+                            <StarRating
+                              value={evaluation.nota_pontualidade}
+                              readOnly
+                            />
+                          </div>
                         </TableCell>
-                        <TableCell className="text-center">
-                          <Badge
-                            className={getScoreColor(evaluation.nota_qualidade)}
-                          >
-                            {evaluation.nota_qualidade}
-                          </Badge>
+                        <TableCell>
+                          <div className="flex justify-center">
+                            <StarRating
+                              value={evaluation.nota_qualidade}
+                              readOnly
+                            />
+                          </div>
                         </TableCell>
-                        <TableCell className="text-center">
-                          <Badge
-                            className={getScoreColor(
-                              evaluation.nota_trabalho_equipe,
-                            )}
-                          >
-                            {evaluation.nota_trabalho_equipe}
-                          </Badge>
+                        <TableCell>
+                          <div className="flex justify-center">
+                            <StarRating
+                              value={evaluation.nota_trabalho_equipe}
+                              readOnly
+                            />
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
