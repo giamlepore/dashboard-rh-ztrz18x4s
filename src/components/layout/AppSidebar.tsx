@@ -25,27 +25,58 @@ import {
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useUserRole } from '@/hooks/use-user-role'
 
 const menuGroups = [
   {
     label: 'Gestão',
     items: [
-      { title: 'Colaboradores', url: '/colaboradores', icon: Users },
-      { title: 'Recrutamento', url: '/recrutamento', icon: UserPlus },
+      {
+        title: 'Colaboradores',
+        url: '/colaboradores',
+        icon: Users,
+        roles: ['Admin', 'Gerente', 'Colaborador'],
+      },
+      {
+        title: 'Recrutamento',
+        url: '/recrutamento',
+        icon: UserPlus,
+        roles: ['Admin', 'Gerente'],
+      },
     ],
   },
   {
     label: 'Operacional',
     items: [
-      { title: 'Ponto', url: '/ponto', icon: Clock },
-      { title: 'Férias', url: '/ferias', icon: CalendarDays },
+      {
+        title: 'Ponto',
+        url: '/ponto',
+        icon: Clock,
+        roles: ['Admin', 'Gerente', 'Colaborador'],
+      },
+      {
+        title: 'Férias',
+        url: '/ferias',
+        icon: CalendarDays,
+        roles: ['Admin', 'Gerente', 'Colaborador'],
+      },
     ],
   },
   {
     label: 'Histórico',
     items: [
-      { title: 'Avaliações', url: '/avaliacoes', icon: FileBarChart },
-      { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
+      {
+        title: 'Avaliações',
+        url: '/avaliacoes',
+        icon: FileBarChart,
+        roles: ['Admin', 'Gerente', 'Colaborador'],
+      },
+      {
+        title: 'Relatórios',
+        url: '/relatorios',
+        icon: BarChart3,
+        roles: ['Admin', 'Gerente'],
+      },
     ],
   },
 ]
@@ -59,6 +90,9 @@ const recentItems = [
 export function AppSidebar() {
   const { isMobile } = useSidebar()
   const location = useLocation()
+  const { role, loading } = useUserRole()
+
+  if (loading) return null
 
   return (
     <Sidebar collapsible="icon" className={cn('border-r', isMobile && 'pt-0')}>
@@ -78,32 +112,40 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {menuGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const isActive = location.pathname === item.url
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.title}
-                      >
-                        <Link to={item.url}>
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {menuGroups.map((group) => {
+          const visibleItems = group.items.filter((item) =>
+            item.roles.includes(role),
+          )
+
+          if (visibleItems.length === 0) return null
+
+          return (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {visibleItems.map((item) => {
+                    const isActive = location.pathname === item.url
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.title}
+                        >
+                          <Link to={item.url}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )
+        })}
 
         <SidebarGroup className="mt-auto group-data-[collapsible=icon]:hidden">
           <SidebarGroupLabel>Recentes</SidebarGroupLabel>

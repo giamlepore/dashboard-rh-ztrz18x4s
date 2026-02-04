@@ -148,27 +148,83 @@ export type Database = {
       recrutamento: {
         Row: {
           created_at: string
+          curriculo_url: string | null
+          email: string | null
           id: string
           image_gender: string | null
           nome_candidato: string
           status: string
+          telefone: string | null
           vaga: string
+          vaga_id: string | null
         }
         Insert: {
           created_at?: string
+          curriculo_url?: string | null
+          email?: string | null
           id?: string
           image_gender?: string | null
           nome_candidato: string
           status: string
+          telefone?: string | null
           vaga: string
+          vaga_id?: string | null
         }
         Update: {
           created_at?: string
+          curriculo_url?: string | null
+          email?: string | null
           id?: string
           image_gender?: string | null
           nome_candidato?: string
           status?: string
+          telefone?: string | null
           vaga?: string
+          vaga_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'recrutamento_vaga_id_fkey'
+            columns: ['vaga_id']
+            isOneToOne: false
+            referencedRelation: 'vagas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      vagas: {
+        Row: {
+          created_at: string
+          departamento: string | null
+          descricao: string | null
+          id: string
+          requisitos: string | null
+          salario: number | null
+          status: string | null
+          tipo_contrato: string | null
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          departamento?: string | null
+          descricao?: string | null
+          id?: string
+          requisitos?: string | null
+          salario?: number | null
+          status?: string | null
+          tipo_contrato?: string | null
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          departamento?: string | null
+          descricao?: string | null
+          id?: string
+          requisitos?: string | null
+          salario?: number | null
+          status?: string | null
+          tipo_contrato?: string | null
+          titulo?: string
         }
         Relationships: []
       }

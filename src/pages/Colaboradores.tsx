@@ -49,6 +49,8 @@ import {
   uploadDocument,
   type Employee,
 } from '@/services/employees'
+import { useUserRole } from '@/hooks/use-user-role'
+import { useAuth } from '@/hooks/use-auth'
 
 type VisibleColumns = {
   cpf: boolean
@@ -79,10 +81,14 @@ export default function Colaboradores() {
     contractType: false,
   })
   const { toast } = useToast()
+  const { role, isEmployee } = useUserRole()
+  const { user } = useAuth()
 
   const fetchEmployees = async () => {
     try {
-      const data = await getEmployees()
+      // If user is employee, pass userId to filter in service (or handle here)
+      const userIdToFilter = isEmployee && user ? user.id : undefined
+      const data = await getEmployees(userIdToFilter)
       setEmployees(data)
     } catch (error) {
       console.error(error)
@@ -96,7 +102,7 @@ export default function Colaboradores() {
 
   useEffect(() => {
     fetchEmployees()
-  }, [])
+  }, [role, user])
 
   const filteredEmployees = employees.filter(
     (e) =>
@@ -249,6 +255,8 @@ export default function Colaboradores() {
     }
   }
 
+  const canEdit = role === 'Admin' || role === 'Gerente'
+
   return (
     <div className="p-6 md:p-8 space-y-6 animate-fade-in-up">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -258,40 +266,42 @@ export default function Colaboradores() {
             Gerencie a equipe da sua empresa.
           </p>
         </div>
-        <Dialog
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open)
-            if (!open) setEditingEmployee(null)
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Adicionar Colaborador
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingEmployee ? 'Editar Colaborador' : 'Novo Colaborador'}
-              </DialogTitle>
-            </DialogHeader>
-            <EmployeeForm
-              initialData={
-                editingEmployee
-                  ? {
-                      ...mapToFormValues(editingEmployee),
-                      id: editingEmployee.id,
-                      documentos_urls: editingEmployee.documentos_urls,
-                    }
-                  : null
-              }
-              onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
-              isLoading={isLoading}
-            />
-          </DialogContent>
-        </Dialog>
+        {canEdit && (
+          <Dialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open)
+              if (!open) setEditingEmployee(null)
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Adicionar Colaborador
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingEmployee ? 'Editar Colaborador' : 'Novo Colaborador'}
+                </DialogTitle>
+              </DialogHeader>
+              <EmployeeForm
+                initialData={
+                  editingEmployee
+                    ? {
+                        ...mapToFormValues(editingEmployee),
+                        id: editingEmployee.id,
+                        documentos_urls: editingEmployee.documentos_urls,
+                      }
+                    : null
+                }
+                onSubmit={handleSubmit}
+                onCancel={() => setIsDialogOpen(false)}
+                isLoading={isLoading}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
@@ -402,7 +412,7 @@ export default function Colaboradores() {
               {visibleColumns.salary && <TableHead>Salário</TableHead>}
               {visibleColumns.contractType && <TableHead>Contrato</TableHead>}
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              {canEdit && <TableHead className="text-right">Ações</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -482,23 +492,25 @@ export default function Colaboradores() {
                       {employee.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right whitespace-nowrap">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEdit(employee)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-500 hover:text-red-600"
-                      onClick={() => setDeletingId(employee.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+                  {canEdit && (
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEdit(employee)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-600"
+                        onClick={() => setDeletingId(employee.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}

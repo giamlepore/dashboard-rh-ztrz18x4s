@@ -17,13 +17,22 @@ export interface Employee {
   status: string
   documentos_urls: { name: string; url: string; size: string }[]
   image_gender: string
+  role: 'Admin' | 'Gerente' | 'Colaborador'
+  user_id: string | null
 }
 
-export const getEmployees = async () => {
-  const { data, error } = await supabase
+export const getEmployees = async (userId?: string) => {
+  let query = supabase
     .from('colaboradores')
     .select('*')
     .order('nome', { ascending: true })
+
+  // If userId is provided, filter by it (for Colaborador view)
+  if (userId) {
+    query = query.eq('user_id', userId)
+  }
+
+  const { data, error } = await query
 
   if (error) throw error
   return data as Employee[]
@@ -62,11 +71,8 @@ export const deleteEmployee = async (id: string) => {
 }
 
 export const uploadDocument = async (file: File, employeeId: string) => {
-  // Supabase Client automatically includes 'apikey' and 'Authorization' headers
   const timestamp = new Date().getTime()
-  // Add random string to ensure uniqueness and avoid overwriting
   const randomString = Math.random().toString(36).substring(2, 15)
-  // Sanitize filename
   const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
   const filePath = `${employeeId}/${timestamp}_${randomString}_${sanitizedName}`
 

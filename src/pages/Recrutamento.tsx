@@ -6,11 +6,32 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Briefcase, Users, ArrowRight } from 'lucide-react'
+import { Briefcase, Users, ArrowRight, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useUserRole } from '@/hooks/use-user-role'
+import { useEffect } from 'react'
+import { useToast } from '@/hooks/use-toast'
 
 export default function Recrutamento() {
   const navigate = useNavigate()
+  const { isEmployee, loading } = useUserRole()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    if (!loading && isEmployee) {
+      toast({
+        title: 'Acesso Negado',
+        description:
+          'Você não tem permissão para acessar o módulo de recrutamento.',
+        variant: 'destructive',
+      })
+      navigate('/')
+    }
+  }, [isEmployee, loading, navigate, toast])
+
+  if (loading || isEmployee) {
+    return null
+  }
 
   return (
     <div className="p-6 md:p-12 animate-fade-in flex flex-col items-center justify-center min-h-[80vh]">
