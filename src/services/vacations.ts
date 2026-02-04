@@ -5,7 +5,8 @@ export interface Vacation {
   colaborador_id: string
   data_inicio: string
   data_fim: string
-  status: string
+  status: 'Pendente' | 'Aprovada' | 'Reprovada'
+  observacoes?: string
   colaboradores?: {
     nome: string
   }
@@ -21,12 +22,23 @@ export const getVacations = async () => {
   return data as Vacation[]
 }
 
+export const getVacationsByEmployeeId = async (employeeId: string) => {
+  const { data, error } = await supabase
+    .from('ferias')
+    .select('*, colaboradores(nome)')
+    .eq('colaborador_id', employeeId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data as Vacation[]
+}
+
 export const createVacation = async (
-  vacation: Omit<Vacation, 'id' | 'colaboradores'>,
+  vacation: Omit<Vacation, 'id' | 'colaboradores' | 'status'>,
 ) => {
   const { data, error } = await supabase
     .from('ferias')
-    .insert(vacation)
+    .insert({ ...vacation, status: 'Pendente' })
     .select('*, colaboradores(nome)')
     .single()
 
