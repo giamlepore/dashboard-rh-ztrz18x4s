@@ -1,138 +1,293 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Card,
   CardContent,
-  CardFooter,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Target, Users, TrendingUp, ChevronRight } from 'lucide-react'
-
-const cycles = [
-  {
-    id: 1,
-    title: 'Avaliação 90 Dias',
-    type: 'Período de Experiência',
-    due: 'Vence em 5 dias',
-    progress: 80,
-    color: 'bg-blue-500',
-  },
-  {
-    id: 2,
-    title: 'Avaliação Anual 2025',
-    type: 'Desempenho Geral',
-    due: 'Em andamento',
-    progress: 45,
-    color: 'bg-indigo-500',
-  },
-  {
-    id: 3,
-    title: 'Feedback 360º',
-    type: 'Liderança',
-    due: 'Agendado',
-    progress: 10,
-    color: 'bg-purple-500',
-  },
-]
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Target, Search, Plus, Trash2 } from 'lucide-react'
+import { useUserRole } from '@/hooks/use-user-role'
+import { useToast } from '@/hooks/use-toast'
+import { getEmployees } from '@/services/employees'
+import {
+  getEvaluations,
+  createEvaluation,
+  deleteEvaluation,
+  type Evaluation,
+} from '@/services/evaluations'
+import { EvaluationForm } from '@/components/forms/EvaluationForm'
+import { type EvaluationFormValues } from '@/components/forms/evaluation-schema'
 
 export default function Avaliacoes() {
+  const [evaluations, setEvaluations] = useState<Evaluation[]>([])
+  const [employees, setEmployees] = useState<{ id: string; nome: string }[]>([])
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [loadingData, setLoadingData] = useState(false)
+
+  const { isEmployee, isAdmin, isManager, loading } = useUserRole()
+  const { toast } = useToast()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!loading && isEmployee) {
+      toast({
+        title: 'Acesso Negado',
+        description: 'Você não tem permissão para acessar esta página.',
+        variant: 'destructive',
+      })
+      navigate('/')
+    }
+  }, [isEmployee, loading, navigate, toast])
+
+  const fetchData = async () => {
+    setLoadingData(true)
+    try {
+      // Fetch employees for dropdowns
+      const emps = await getEmployees()
+      setEmployees(emps.map((e) => ({ id: e.id, nome: e.nome })))
+
+      // Admin fetches list
+      if (isAdmin) {
+        const data = await getEvaluations()
+        setEvaluations(data)
+      }
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro',
+        description: 'Falha ao carregar dados.',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!loading && !isEmployee) {
+      fetchData()
+    }
+  }, [loading, isAdmin, isEmployee])
+
+  const handleSubmit = async (data: EvaluationFormValues) => {
+    try {
+      await createEvaluation({
+        colaborador_id: data.colaboradorId,
+        avaliador_id: data.avaliadorId,
+        periodo: data.periodo,
+        nota_pontualidade: data.notaPontualidade,
+        nota_qualidade: data.notaQualidade,
+        nota_trabalho_equipe: data.notaTrabalhoEquipe,
+        observacoes: data.observacoes,
+      })
+
+      toast({ title: 'Sucesso', description: 'Avaliação registrada.' })
+      setIsDialogOpen(false)
+      fetchData()
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro',
+        description: 'Erro ao salvar avaliação.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return
+    try {
+      await deleteEvaluation(id)
+      toast({ title: 'Sucesso', description: 'Avaliação removida.' })
+      fetchData()
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao remover.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const getScoreColor = (score: number) => {
+    if (score >= 4) return 'bg-emerald-500 hover:bg-emerald-600'
+    if (score >= 3) return 'bg-amber-500 hover:bg-amber-600'
+    return 'bg-red-500 hover:bg-red-600'
+  }
+
+  const filteredEvaluations = evaluations.filter(
+    (e) =>
+      e.colaborador?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.periodo.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  if (loading || isEmployee) return null
+
   return (
     <div className="p-6 md:p-8 space-y-6 animate-fade-in-up">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             Avaliações de Desempenho
           </h1>
           <p className="text-muted-foreground text-sm">
-            Acompanhe os ciclos de feedback e desenvolvimento.
+            Gerencie e acompanhe o desempenho da equipe.
           </p>
         </div>
-        <Button>
-          <Target className="mr-2 h-4 w-4" /> Novo Ciclo
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Nova Avaliação
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Registrar Avaliação</DialogTitle>
+            </DialogHeader>
+            <EvaluationForm
+              employees={employees}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {cycles.map((cycle) => (
-          <Card
-            key={cycle.id}
-            className="border-none shadow-sm hover:shadow-md transition-shadow"
-          >
-            <CardHeader>
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 ${cycle.color} bg-opacity-10 text-primary`}
-              >
-                {cycle.id === 1 ? (
-                  <TrendingUp className="h-5 w-5" />
-                ) : cycle.id === 2 ? (
-                  <Target className="h-5 w-5" />
-                ) : (
-                  <Users className="h-5 w-5" />
-                )}
-              </div>
-              <CardTitle className="text-lg">{cycle.title}</CardTitle>
-              <p className="text-sm text-muted-foreground">{cycle.type}</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-medium">
-                  <span>Progresso</span>
-                  <span>{cycle.progress}%</span>
-                </div>
-                <Progress value={cycle.progress} className="h-2" />
-                <p className="text-xs text-muted-foreground pt-1">
-                  {cycle.due}
-                </p>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button
-                variant="ghost"
-                className="w-full justify-between text-sm font-normal"
-              >
-                Ver Detalhes <ChevronRight className="h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-
-      <div className="space-y-4 mt-8">
-        <h2 className="text-lg font-semibold">
-          Avaliações Individuais Recentes
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 p-3 bg-card rounded-lg border shadow-sm"
-            >
-              <Avatar>
-                <AvatarImage
-                  src={`https://img.usecurling.com/ppl/thumbnail?gender=${i % 2 === 0 ? 'female' : 'male'}&seed=${i}`}
+      {isAdmin && (
+        <Card className="border-none shadow-sm">
+          <CardHeader className="px-0 pt-0">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Histórico de Avaliações</CardTitle>
+              <div className="relative w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Filtrar por nome ou período..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Nome do Colaborador</p>
-                <div className="flex items-center gap-1 mt-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <div
-                      key={star}
-                      className={`h-1.5 w-1.5 rounded-full ${star <= 4 ? 'bg-amber-400' : 'bg-gray-200'}`}
-                    />
-                  ))}
-                </div>
               </div>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
             </div>
-          ))}
+            <CardDescription>
+              Lista completa de todas as avaliações registradas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-0">
+            <div className="rounded-md border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Colaborador</TableHead>
+                    <TableHead>Avaliador</TableHead>
+                    <TableHead>Período</TableHead>
+                    <TableHead className="text-center">Pontualidade</TableHead>
+                    <TableHead className="text-center">Qualidade</TableHead>
+                    <TableHead className="text-center">Equipe</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEvaluations.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="text-center h-24 text-muted-foreground"
+                      >
+                        {loadingData
+                          ? 'Carregando...'
+                          : 'Nenhuma avaliação encontrada.'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredEvaluations.map((evaluation) => (
+                      <TableRow key={evaluation.id}>
+                        <TableCell className="font-medium">
+                          {evaluation.colaborador?.nome || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          {evaluation.avaliador?.nome || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{evaluation.periodo}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            className={getScoreColor(
+                              evaluation.nota_pontualidade,
+                            )}
+                          >
+                            {evaluation.nota_pontualidade}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            className={getScoreColor(evaluation.nota_qualidade)}
+                          >
+                            {evaluation.nota_qualidade}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            className={getScoreColor(
+                              evaluation.nota_trabalho_equipe,
+                            )}
+                          >
+                            {evaluation.nota_trabalho_equipe}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:text-red-600"
+                            onClick={() => handleDelete(evaluation.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isAdmin && isManager && (
+        <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg bg-muted/10">
+          <div className="p-4 bg-background rounded-full mb-4 shadow-sm">
+            <Target className="h-8 w-8 text-primary" />
+          </div>
+          <h3 className="text-lg font-semibold">Área do Gerente</h3>
+          <p className="text-muted-foreground max-w-sm mt-2">
+            Utilize o botão "Nova Avaliação" acima para registrar o desempenho
+            dos membros da sua equipe.
+          </p>
         </div>
-      </div>
+      )}
     </div>
   )
 }
