@@ -33,6 +33,7 @@ export default function SignUp() {
 
     setLoading(true)
 
+    // Using the signUp method from useAuth hook which wraps supabase.auth.signUp
     const { error } = await signUp(email, password)
 
     if (error) {
