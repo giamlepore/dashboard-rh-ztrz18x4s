@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Table,
   TableBody,
@@ -21,6 +21,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import {
   Plus,
@@ -30,6 +31,8 @@ import {
   ArrowLeft,
   Mail,
   Phone,
+  Loader2,
+  Download,
 } from 'lucide-react'
 import {
   CandidateForm,
@@ -41,10 +44,12 @@ import {
   getCandidates,
   createCandidate,
   updateCandidate,
+  uploadCandidateCV,
   Candidate,
 } from '@/services/recruitment'
 import { getJobs, Job } from '@/services/jobs'
 import { useNavigate } from 'react-router-dom'
+import { cn } from '@/lib/utils'
 
 export default function Candidatos() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
@@ -53,6 +58,12 @@ export default function Candidatos() {
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(
     null,
   )
+
+  // Upload states
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const candidateIdRef = useRef<string | null>(null)
+
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -125,6 +136,51 @@ export default function Candidatos() {
     }
   }
 
+  const handleCVClick = (candidateId: string) => {
+    candidateIdRef.current = candidateId
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.type !== 'application/pdf') {
+      toast({
+        title: 'Formato inválido',
+        description: 'Por favor, selecione um arquivo PDF.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const id = candidateIdRef.current
+    if (!id) return
+
+    try {
+      setUploadingId(id)
+      await uploadCandidateCV(id, file)
+      toast({
+        title: 'Sucesso',
+        description: 'CV enviado e vinculado com sucesso.',
+      })
+      fetchData()
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro no upload',
+        description: 'Não foi possível enviar o CV.',
+        variant: 'destructive',
+      })
+    } finally {
+      setUploadingId(null)
+      candidateIdRef.current = null
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Aprovado':
@@ -142,6 +198,14 @@ export default function Candidatos() {
 
   return (
     <div className="p-6 md:p-8 space-y-6 animate-fade-in">
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".pdf"
+        onChange={handleFileChange}
+      />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-3">
           <Button
@@ -263,9 +327,25 @@ export default function Candidatos() {
                         variant="outline"
                         size="sm"
                         className="hidden md:flex"
-                        title="Visualizar Currículo"
+                        title={
+                          candidate.curriculo_url
+                            ? 'Atualizar Currículo'
+                            : 'Enviar Currículo'
+                        }
+                        onClick={() => handleCVClick(candidate.id)}
+                        disabled={uploadingId === candidate.id}
                       >
-                        <FileText className="h-4 w-4 mr-1" /> CV
+                        {uploadingId === candidate.id ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <FileText
+                            className={cn(
+                              'h-4 w-4 mr-1',
+                              candidate.curriculo_url && 'text-blue-600',
+                            )}
+                          />
+                        )}
+                        CV
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -282,6 +362,24 @@ export default function Candidatos() {
                           >
                             <Pencil className="h-4 w-4 mr-2" /> Editar
                           </DropdownMenuItem>
+
+                          {candidate.curriculo_url && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  window.open(
+                                    candidate.curriculo_url || '',
+                                    '_blank',
+                                  )
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-2" /> Baixar CV
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+
                           <DropdownMenuItem
                             onClick={() =>
                               handleStatusChange(candidate.id, 'Triagem')
