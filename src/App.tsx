@@ -18,6 +18,7 @@ import SignUp from '@/pages/SignUp'
 import CompleteProfile from '@/pages/CompleteProfile'
 import VisitorDashboard from '@/pages/VisitorDashboard'
 import { AuthProvider } from '@/hooks/use-auth'
+import { UserRoleProvider } from '@/hooks/use-user-role'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
 const App = () => (
@@ -25,57 +26,59 @@ const App = () => (
     future={{ v7_startTransition: false, v7_relativeSplatPath: false }}
   >
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
+      <UserRoleProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
 
-          {/* Initial Profile Completion Step */}
-          <Route
-            path="/complete-profile"
-            element={
-              <ProtectedRoute>
-                <CompleteProfile />
-              </ProtectedRoute>
-            }
-          />
+            {/* Initial Profile Completion Step */}
+            <Route
+              path="/complete-profile"
+              element={
+                <ProtectedRoute>
+                  <CompleteProfile />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Visitor View */}
-          <Route
-            path="/visitor"
-            element={
-              <ProtectedRoute>
-                <VisitorDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Visitor View */}
+            <Route
+              path="/visitor"
+              element={
+                <ProtectedRoute>
+                  <VisitorDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Main App Routes */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<Index />} />
-            <Route path="/colaboradores" element={<Colaboradores />} />
+            {/* Main App Routes */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/" element={<Index />} />
+              <Route path="/colaboradores" element={<Colaboradores />} />
 
-            {/* Recruitment Routes */}
-            <Route path="/recrutamento" element={<Recrutamento />} />
-            <Route path="/recrutamento/vagas" element={<Vagas />} />
-            <Route path="/recrutamento/candidatos" element={<Candidatos />} />
+              {/* Recruitment Routes */}
+              <Route path="/recrutamento" element={<Recrutamento />} />
+              <Route path="/recrutamento/vagas" element={<Vagas />} />
+              <Route path="/recrutamento/candidatos" element={<Candidatos />} />
 
-            <Route path="/ponto" element={<Ponto />} />
-            <Route path="/ferias" element={<Ferias />} />
-            <Route path="/avaliacoes" element={<Avaliacoes />} />
-            <Route path="/relatorios" element={<Relatorios />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </TooltipProvider>
+              <Route path="/ponto" element={<Ponto />} />
+              <Route path="/ferias" element={<Ferias />} />
+              <Route path="/avaliacoes" element={<Avaliacoes />} />
+              <Route path="/relatorios" element={<Relatorios />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </UserRoleProvider>
     </AuthProvider>
   </BrowserRouter>
 )

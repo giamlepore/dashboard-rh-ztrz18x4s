@@ -45,22 +45,23 @@ export default function CompleteProfile() {
         salario: 0,
         tipo_contrato: 'A definir',
         documentos_urls: [],
-        image_gender: 'male', // Could be inferred or asked, defaulting for now
+        image_gender: 'male',
       })
 
       toast.success('Perfil completado com sucesso!')
 
-      // Refresh user role to update state in ProtectedRoute
+      // Refresh user role context. This will trigger the ProtectedRoute to re-evaluate
+      // the user state and automatically redirect to the correct page (visitor or home).
       await refreshProfile()
 
-      // Navigate to home (which will redirect to visitor dashboard)
-      navigate('/')
+      // We navigate explicitly to home as a fallback, but ProtectedRoute will likely
+      // intercept and redirect to /visitor before this completes if the role is visitor.
+      navigate('/', { replace: true })
     } catch (error) {
       console.error(error)
       toast.error('Erro ao salvar perfil', {
         description: 'Tente novamente mais tarde.',
       })
-    } finally {
       setLoading(false)
     }
   }
