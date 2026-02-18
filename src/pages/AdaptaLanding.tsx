@@ -17,6 +17,7 @@ import {
   FileText,
   Database,
   Building2,
+  Smartphone,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
