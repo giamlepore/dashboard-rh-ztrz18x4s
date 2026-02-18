@@ -17,7 +17,8 @@ import Login from '@/pages/Login'
 import SignUp from '@/pages/SignUp'
 import CompleteProfile from '@/pages/CompleteProfile'
 import VisitorDashboard from '@/pages/VisitorDashboard'
-import PublicJob from '@/pages/PublicJob' // Import the new page
+import PublicJob from '@/pages/PublicJob'
+import AdaptaLanding from '@/pages/AdaptaLanding' // Import the new landing page
 import { AuthProvider } from '@/hooks/use-auth'
 import { UserRoleProvider } from '@/hooks/use-user-role'
 import ProtectedRoute from '@/components/ProtectedRoute'
@@ -34,6 +35,9 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+
+            {/* Public Landing Page */}
+            <Route path="/adapta" element={<AdaptaLanding />} />
 
             {/* Public Job Route */}
             <Route path="/vagas/publica/:id" element={<PublicJob />} />
