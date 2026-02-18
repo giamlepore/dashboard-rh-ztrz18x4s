@@ -45,6 +45,7 @@ import {
   createCandidate,
   updateCandidate,
   uploadCandidateCV,
+  downloadCandidateCV,
   Candidate,
 } from '@/services/recruitment'
 import { getJobs, Job } from '@/services/jobs'
@@ -61,6 +62,9 @@ export default function Candidatos() {
 
   // Upload states
   const [uploadingId, setUploadingId] = useState<string | null>(null)
+  // Download states
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const candidateIdRef = useRef<string | null>(null)
 
@@ -141,6 +145,47 @@ export default function Candidatos() {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
       fileInputRef.current.click()
+    }
+  }
+
+  const handleDownloadCV = async (candidate: Candidate) => {
+    if (!candidate.curriculo_url) return
+
+    try {
+      setDownloadingId(candidate.id)
+      const blob = await downloadCandidateCV(candidate.curriculo_url)
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+
+      // Extract extension or default to pdf
+      const extension = candidate.curriculo_url.split('.').pop() || 'pdf'
+      // Format filename: name_cv.ext
+      const filename = `${candidate.nome_candidato.replace(/\s+/g, '_').toLowerCase()}_cv.${extension}`
+
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      link.parentNode?.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      toast({
+        title: 'Download concluído',
+        description: 'O currículo foi baixado com sucesso.',
+      })
+    } catch (error) {
+      console.error('Erro no download:', error)
+      toast({
+        title: 'Erro no download',
+        description: 'Não foi possível baixar o arquivo.',
+        variant: 'destructive',
+      })
+    } finally {
+      setDownloadingId(null)
     }
   }
 
@@ -367,14 +412,15 @@ export default function Candidatos() {
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => {
-                                  window.open(
-                                    candidate.curriculo_url || '',
-                                    '_blank',
-                                  )
-                                }}
+                                onClick={() => handleDownloadCV(candidate)}
+                                disabled={downloadingId === candidate.id}
                               >
-                                <Download className="h-4 w-4 mr-2" /> Baixar CV
+                                {downloadingId === candidate.id ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Download className="h-4 w-4 mr-2" />
+                                )}
+                                Baixar CV
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                             </>

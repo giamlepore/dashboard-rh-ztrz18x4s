@@ -85,6 +85,42 @@ export const uploadCandidateCV = async (id: string, file: File) => {
   return publicUrl
 }
 
+export const downloadCandidateCV = async (url: string) => {
+  try {
+    // Try to parse the URL to get bucket and path
+    // Format usually is: .../storage/v1/object/public/{bucket}/{path}
+    const urlObj = new URL(url)
+    const pathParts = urlObj.pathname.split('/storage/v1/object/public/')
+
+    if (pathParts.length >= 2) {
+      const fullPath = pathParts[1]
+      const slashIndex = fullPath.indexOf('/')
+
+      if (slashIndex !== -1) {
+        const bucket = fullPath.substring(0, slashIndex)
+        const path = fullPath.substring(slashIndex + 1)
+
+        // Use Supabase client to download (handles auth headers for private buckets)
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .download(path)
+
+        if (error) throw error
+        return data
+      }
+    }
+
+    // Fallback: If URL structure doesn't match or parsing fails, try direct fetch
+    // This supports cases where the URL might be different or external
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('Download failed')
+    return await response.blob()
+  } catch (error) {
+    console.error('Error downloading CV:', error)
+    throw error
+  }
+}
+
 export const submitPublicApplication = async (
   candidate: {
     nome_candidato: string
