@@ -27,10 +27,12 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter var', 'SF Pro Display', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
         display: ['SF Pro Display', 'Inter var', 'system-ui', 'sans-serif'],
         serif: ['EB Garamond', 'serif'],
         mono: ['VT323', 'monospace'],
+        // New Fonts for Adapta Landing
+        instrument: ['Instrument Serif', 'serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -100,6 +102,12 @@ export default {
           blue: 'hsl(var(--rainbow-blue))',
           purple: 'hsl(var(--rainbow-purple))',
         },
+        // Adapta Landing Palette
+        salmon: '#FF9678',
+        periwinkle: '#CCD7E4',
+        sage: '#C8DFA8',
+        cream: '#F5F2EA',
+        ink: '#1A1A18',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -120,6 +128,10 @@ export default {
       },
       transitionTimingFunction: {
         apple: 'cubic-bezier(0.42, 0, 0.58, 1)',
+      },
+      animation: {
+        'spin-slow': 'spin 12s linear infinite',
+        drift: 'drift 30s linear infinite',
       },
     },
   },

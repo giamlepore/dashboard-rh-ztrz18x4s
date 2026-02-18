@@ -1,465 +1,409 @@
 import { Link } from 'react-router-dom'
-import {
-  Shield,
-  Users,
-  Key,
-  Briefcase,
-  Search,
-  FileDown,
-  Clock,
-  Calendar,
-  BarChart3,
-  Lock,
-  CheckCircle2,
-  ArrowRight,
-  LayoutDashboard,
-  TrendingUp,
-  FileText,
-  Database,
-  Building2,
-  Smartphone,
-  Terminal,
-  Server,
-  Code2,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { ArrowUpRight } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 
 export default function AdaptaLanding() {
   const { user } = useAuth()
 
-  // Rainbow accents for cards
-  const rainbowColors = [
-    'border-l-rainbow-red',
-    'border-l-rainbow-orange',
-    'border-l-rainbow-yellow',
-    'border-l-rainbow-green',
-    'border-l-rainbow-blue',
-    'border-l-rainbow-purple',
-  ]
-
   return (
-    <div className="min-h-screen bg-vintage-paper font-sans text-vintage-text overflow-x-hidden selection:bg-rainbow-yellow selection:text-vintage-text">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-vintage-paper/95 backdrop-blur border-b border-vintage-text/10 supports-[backdrop-filter]:bg-vintage-paper/60">
-        <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-3 font-bold text-2xl tracking-tighter">
-            <div className="bg-vintage-text text-vintage-paper p-1.5 rounded shadow-chassis-sm">
-              <LayoutDashboard className="h-6 w-6" />
+    <div className="min-h-screen bg-cream font-sans text-ink selection:bg-salmon selection:text-ink">
+      {/* Sticky Minimalist Navigation */}
+      <nav className="fixed top-0 left-0 w-full z-50 mix-blend-difference text-cream px-6 py-4 flex items-center justify-between pointer-events-none">
+        <div className="pointer-events-auto">
+          <Link
+            to="/"
+            className="text-xl font-medium tracking-tight font-instrument"
+          >
+            Adapta.
+          </Link>
+        </div>
+        <div className="flex items-center gap-6 pointer-events-auto font-medium">
+          {user ? (
+            <Link to="/" className="hover:opacity-70 transition-opacity">
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link to="/login" className="hover:opacity-70 transition-opacity">
+                Log in
+              </Link>
+              <Link
+                to="/signup"
+                className="hidden sm:inline-block border border-cream rounded-full px-4 py-1 hover:bg-cream hover:text-ink transition-colors"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
+        </div>
+      </nav>
+
+      <div className="p-4 md:p-6 lg:p-8 pt-20 md:pt-24 max-w-[1600px] mx-auto">
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
+          {/* 1. Hero Card - Salmon */}
+          <div className="col-span-1 md:col-span-8 bg-salmon rounded-[24px] p-8 md:p-12 lg:p-16 relative overflow-hidden min-h-[400px] md:min-h-[500px] flex flex-col justify-between group">
+            {/* Drifting Background Lines */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+              <svg
+                className="w-[200%] h-full animate-drift"
+                viewBox="0 0 200 100"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0,20 Q50,80 100,20 T200,20"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+                <path
+                  d="M0,50 Q50,110 100,50 T200,50"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+                <path
+                  d="M0,80 Q50,140 100,80 T200,80"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+              </svg>
             </div>
-            <span className="font-serif">ADAPTARH</span>
-            <span className="hidden sm:inline-block font-mono text-xs bg-rainbow-yellow/20 text-vintage-text px-2 py-0.5 rounded-full border border-vintage-text/10">
-              v2.0_RETRO
-            </span>
-          </div>
-          <nav className="flex gap-4 items-center">
-            {user ? (
-              <Link to="/">
-                <Button className="font-mono bg-vintage-text text-vintage-paper hover:bg-vintage-text/90 shadow-chassis-sm">
-                  DASHBOARD_ACCESS
-                </Button>
-              </Link>
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button
-                    variant="ghost"
-                    className="font-mono hover:bg-black/5"
-                  >
-                    LOGIN
-                  </Button>
-                </Link>
-                <Link to="/signup" className="hidden sm:block">
-                  <Button className="font-mono bg-vintage-text text-vintage-paper hover:bg-vintage-text/90 shadow-chassis-sm">
-                    CREATE_ACCOUNT
-                  </Button>
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
 
-      {/* Hero Section */}
-      <section className="relative py-24 lg:py-32 px-4 md:px-6 overflow-hidden bg-vintage-paper">
-        <div className="container mx-auto max-w-5xl space-y-8 relative z-10 animate-fade-in-down">
-          <div className="flex justify-center">
-            <Badge
-              variant="outline"
-              className="px-4 py-1.5 text-sm font-mono border-vintage-text/20 bg-chassis-base text-vintage-text shadow-chassis-sm rounded-none"
-            >
-              <Terminal className="w-4 h-4 mr-2" /> SYSTEM_ONLINE :: READY
-            </Badge>
-          </div>
+            <div className="relative z-10 space-y-4">
+              <h1 className="font-instrument text-5xl md:text-7xl lg:text-8xl leading-[0.9] tracking-tight text-ink max-w-4xl">
+                Gestão de RH que <br />
+                <span className="italic">aprende</span> com o <br />
+                seu negócio.
+              </h1>
+            </div>
 
-          <h1 className="text-5xl md:text-7xl font-serif font-medium tracking-tight text-center text-vintage-text leading-[1.1]">
-            Gestão de RH <br className="hidden md:inline" />
-            <span className="relative inline-block px-2">
-              <span className="absolute inset-0 bg-rainbow-yellow/30 -rotate-1 skew-x-3 rounded-sm -z-10"></span>
-              Completa & Inteligente
-            </span>
-          </h1>
-
-          <p className="text-xl md:text-2xl text-vintage-text/80 max-w-[800px] mx-auto text-center font-serif leading-relaxed italic">
-            "Transforme a gestão de pessoas com uma plataforma moderna, segura e
-            eficiente. Do recrutamento à avaliação de desempenho."
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
-            <Link to="/signup">
-              <Button
-                size="lg"
-                className="h-14 px-8 text-lg font-mono bg-vintage-text text-vintage-paper hover:bg-vintage-text/90 shadow-chassis-md hover:translate-y-[2px] hover:shadow-chassis-sm transition-all border-2 border-transparent"
-              >
-                INICIAR_SISTEMA <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
-            {!user && (
-              <Link to="/login">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-14 px-8 text-lg font-mono bg-chassis-base border-2 border-vintage-text text-vintage-text hover:bg-chassis-base/80 shadow-chassis-md hover:translate-y-[2px] hover:shadow-chassis-sm transition-all"
-                >
-                  ACESSAR_CONTA
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-20 px-4 md:px-6 bg-chassis-base/30 border-y border-vintage-text/10">
-        <div className="container mx-auto">
-          <div className="text-center mb-16 space-y-4 max-w-2xl mx-auto">
-            <h2 className="text-4xl font-serif font-medium tracking-tight text-vintage-text">
-              Recursos do Sistema
-            </h2>
-            <p className="text-vintage-text/70 text-lg font-mono">
-              [LOADING MODULES...]
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-1000">
-            {/* Administration */}
-            <Card
-              className={cn(
-                'bg-chassis-base border-2 border-chassis-border shadow-chassis-md hover:-translate-y-1 hover:shadow-chassis-lg transition-all duration-300 rounded-lg overflow-hidden border-l-4',
-                rainbowColors[0],
-              )}
-            >
-              <CardHeader className="bg-white/50 border-b border-chassis-border/50 pb-4">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant="outline"
-                    className="font-mono bg-white/80 border-vintage-text/20 text-xs"
-                  >
-                    SYS.ADMIN
-                  </Badge>
-                  <Shield className="h-5 w-5 text-rainbow-red" />
-                </div>
-                <CardTitle className="font-serif text-2xl mt-2">
-                  Administração
-                </CardTitle>
-                <CardDescription className="font-mono text-xs uppercase tracking-wider text-vintage-text/60">
-                  Auth & Security Module
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-3 text-sm font-medium text-vintage-text/80">
-                  <li className="flex gap-3 items-start">
-                    <Key className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Controle de Acesso Baseado em Funções (RBAC)</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <Building2 className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Sistema de Organização e Múltiplas Empresas</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <Users className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Sistema de Convites e Fila de Visitantes</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Employee Management */}
-            <Card
-              className={cn(
-                'bg-chassis-base border-2 border-chassis-border shadow-chassis-md hover:-translate-y-1 hover:shadow-chassis-lg transition-all duration-300 rounded-lg overflow-hidden border-l-4',
-                rainbowColors[1],
-              )}
-            >
-              <CardHeader className="bg-white/50 border-b border-chassis-border/50 pb-4">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant="outline"
-                    className="font-mono bg-white/80 border-vintage-text/20 text-xs"
-                  >
-                    DB.EMPLOYEES
-                  </Badge>
-                  <Users className="h-5 w-5 text-rainbow-orange" />
-                </div>
-                <CardTitle className="font-serif text-2xl mt-2">
-                  Colaboradores
-                </CardTitle>
-                <CardDescription className="font-mono text-xs uppercase tracking-wider text-vintage-text/60">
-                  People Management
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-3 text-sm font-medium text-vintage-text/80">
-                  <li className="flex gap-3 items-start">
-                    <Database className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Banco de Dados de Funcionários Completo</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <FileText className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Gestão de Documentos Segura</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <Search className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Diretório Dinâmico com Filtros</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Recruitment */}
-            <Card
-              className={cn(
-                'bg-chassis-base border-2 border-chassis-border shadow-chassis-md hover:-translate-y-1 hover:shadow-chassis-lg transition-all duration-300 rounded-lg overflow-hidden border-l-4',
-                rainbowColors[2],
-              )}
-            >
-              <CardHeader className="bg-white/50 border-b border-chassis-border/50 pb-4">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant="outline"
-                    className="font-mono bg-white/80 border-vintage-text/20 text-xs"
-                  >
-                    MOD.HIRING
-                  </Badge>
-                  <Briefcase className="h-5 w-5 text-rainbow-yellow" />
-                </div>
-                <CardTitle className="font-serif text-2xl mt-2">
-                  Recrutamento
-                </CardTitle>
-                <CardDescription className="font-mono text-xs uppercase tracking-wider text-vintage-text/60">
-                  Talent Acquisition
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-3 text-sm font-medium text-vintage-text/80">
-                  <li className="flex gap-3 items-start">
-                    <LayoutDashboard className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Gestão de Vagas e Oportunidades</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <ArrowRight className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Portal Público de Vagas Externo</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <FileDown className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Pipeline de Candidatos e Download de CVs</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Operational */}
-            <Card
-              className={cn(
-                'bg-chassis-base border-2 border-chassis-border shadow-chassis-md hover:-translate-y-1 hover:shadow-chassis-lg transition-all duration-300 rounded-lg overflow-hidden border-l-4',
-                rainbowColors[3],
-              )}
-            >
-              <CardHeader className="bg-white/50 border-b border-chassis-border/50 pb-4">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant="outline"
-                    className="font-mono bg-white/80 border-vintage-text/20 text-xs"
-                  >
-                    SYS.OPS
-                  </Badge>
-                  <Clock className="h-5 w-5 text-rainbow-green" />
-                </div>
-                <CardTitle className="font-serif text-2xl mt-2">
-                  Ferramentas Operacionais
-                </CardTitle>
-                <CardDescription className="font-mono text-xs uppercase tracking-wider text-vintage-text/60">
-                  Daily Routines
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-3 text-sm font-medium text-vintage-text/80">
-                  <li className="flex gap-3 items-start">
-                    <Clock className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Controle de Ponto em Tempo Real</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <Calendar className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Gestão de Férias e Aprovações</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <FileText className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Histórico de Registros Auditável</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Performance */}
-            <Card
-              className={cn(
-                'bg-chassis-base border-2 border-chassis-border shadow-chassis-md hover:-translate-y-1 hover:shadow-chassis-lg transition-all duration-300 rounded-lg overflow-hidden border-l-4',
-                rainbowColors[4],
-              )}
-            >
-              <CardHeader className="bg-white/50 border-b border-chassis-border/50 pb-4">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant="outline"
-                    className="font-mono bg-white/80 border-vintage-text/20 text-xs"
-                  >
-                    DATA.ANALYTICS
-                  </Badge>
-                  <TrendingUp className="h-5 w-5 text-rainbow-blue" />
-                </div>
-                <CardTitle className="font-serif text-2xl mt-2">
-                  Performance
-                </CardTitle>
-                <CardDescription className="font-mono text-xs uppercase tracking-wider text-vintage-text/60">
-                  KPIs & Metrics
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-3 text-sm font-medium text-vintage-text/80">
-                  <li className="flex gap-3 items-start">
-                    <CheckCircle2 className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Avaliações de Desempenho (Star Ratings)</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <BarChart3 className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Relatórios Estratégicos e KPIs</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <ArrowRight className="h-4 w-4 mt-0.5 text-vintage-text" />
-                    <span>Dashboards de Folha e Funil</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Tech Foundation */}
-            <Card
-              className={cn(
-                'bg-vintage-text border-2 border-vintage-text shadow-chassis-md hover:-translate-y-1 hover:shadow-chassis-lg transition-all duration-300 rounded-lg overflow-hidden border-l-4 border-l-rainbow-purple',
-              )}
-            >
-              <CardHeader className="bg-white/10 border-b border-white/10 pb-4">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant="outline"
-                    className="font-mono bg-black/50 border-white/20 text-white text-xs"
-                  >
-                    CORE.SYSTEM
-                  </Badge>
-                  <Code2 className="h-5 w-5 text-rainbow-purple" />
-                </div>
-                <CardTitle className="font-serif text-2xl mt-2 text-vintage-paper">
-                  Fundação Técnica
-                </CardTitle>
-                <CardDescription className="font-mono text-xs uppercase tracking-wider text-vintage-paper/60">
-                  Specs & Security
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-3 text-sm font-medium text-vintage-paper/90">
-                  <li className="flex gap-3 items-start">
-                    <Lock className="h-4 w-4 mt-0.5 text-rainbow-green" />
-                    <span>Supabase Row Level Security (RLS)</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <Smartphone className="h-4 w-4 mt-0.5 text-rainbow-blue" />
-                    <span>Interface Responsiva (Mobile First)</span>
-                  </li>
-                  <li className="flex gap-3 items-start">
-                    <Server className="h-4 w-4 mt-0.5 text-rainbow-purple" />
-                    <span>Arquitetura Escalável & Segura</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 px-4 md:px-6 relative overflow-hidden bg-vintage-paper">
-        <div className="absolute inset-0 bg-[url('https://img.usecurling.com/p/200/300?q=noise&color=black')] opacity-5 mix-blend-overlay pointer-events-none"></div>
-        <div className="container mx-auto text-center space-y-8 relative z-10">
-          <div className="inline-block p-4 border-2 border-vintage-text rounded-full mb-4 bg-white shadow-chassis-md">
-            <LayoutDashboard className="h-12 w-12 text-vintage-text" />
-          </div>
-
-          <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-vintage-text">
-            Pronto para revolucionar seu RH?
-          </h2>
-          <p className="text-xl text-vintage-text/80 max-w-2xl mx-auto font-serif italic">
-            "Junte-se a organizações que já utilizam o AdaptaRH para otimizar
-            processos, reduzir burocracia e focar no que realmente importa."
-          </p>
-
-          <div className="pt-8 flex flex-col sm:flex-row gap-6 justify-center">
-            <Link to="/signup">
-              <Button
-                size="lg"
-                className="h-16 px-10 text-xl font-mono bg-rainbow-yellow text-vintage-text hover:bg-rainbow-yellow/90 border-2 border-vintage-text shadow-chassis-lg hover:shadow-chassis-md hover:translate-y-[2px] transition-all"
-              >
-                CRIAR_CONTA_GRATIS
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 px-4 md:px-6 border-t border-vintage-text/10 bg-chassis-base/20">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex flex-col gap-2 items-center md:items-start">
-            <div className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-              <div className="bg-vintage-text text-vintage-paper p-1 rounded">
-                <LayoutDashboard className="h-4 w-4" />
+            <div className="relative z-10 flex flex-wrap gap-4 md:gap-8 mt-12 md:mt-0">
+              <div>
+                <span className="block font-instrument text-3xl md:text-4xl">
+                  23x
+                </span>
+                <span className="text-sm font-medium uppercase tracking-wide opacity-80">
+                  Eficiência Operacional
+                </span>
               </div>
-              <span className="font-serif">ADAPTARH</span>
+              <div>
+                <span className="block font-instrument text-3xl md:text-4xl">
+                  100%
+                </span>
+                <span className="text-sm font-medium uppercase tracking-wide opacity-80">
+                  Processos Digitais
+                </span>
+              </div>
+              <div>
+                <span className="block font-instrument text-3xl md:text-4xl">
+                  0
+                </span>
+                <span className="text-sm font-medium uppercase tracking-wide opacity-80">
+                  Uso de Papel
+                </span>
+              </div>
             </div>
-            <p className="text-sm font-mono text-vintage-text/60 max-w-xs text-center md:text-left">
-              SYSTEM.STATUS: ONLINE
-              <br />
-              VERSION: 2.0.4
-              <br />
-              REGION: SA-EAST-1
-            </p>
+
+            <div className="absolute top-8 right-8 animate-spin-slow hidden md:block">
+              <svg viewBox="0 0 100 100" width="100" height="100">
+                <path
+                  id="curve"
+                  d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
+                  fill="transparent"
+                />
+                <text fontSize="12" letterSpacing="2">
+                  <textPath xlinkHref="#curve" fill="currentColor">
+                    SYSTEM ONLINE • ADAPTA RH •
+                  </textPath>
+                </text>
+              </svg>
+            </div>
           </div>
-          <div className="text-center md:text-right">
-            <p className="text-sm font-medium text-vintage-text font-serif">
-              &copy; 2026 AdaptaRH - Fig Mint Edition
-            </p>
-            <p className="text-xs text-vintage-text/50 font-mono mt-1">
-              BUILT_WITH: REACT + SUPABASE + TAILWIND
-            </p>
+
+          {/* 2. Organic Blob Card - Cream */}
+          <div className="col-span-1 md:col-span-4 bg-cream border border-ink/10 rounded-[24px] relative overflow-hidden min-h-[400px] md:min-h-[500px] flex items-center justify-center">
+            <div className="absolute inset-0 bg-ink/5" />
+            <div className="relative w-full h-full flex items-center justify-center animate-float">
+              <svg
+                viewBox="0 0 200 200"
+                className="w-[80%] h-[80%] drop-shadow-xl"
+              >
+                <defs>
+                  <clipPath id="blob-mask">
+                    <path
+                      d="M45.7,-76.3C58.9,-69.3,69.1,-58.3,77.6,-46.3C86.1,-34.3,92.8,-21.3,91.9,-8.6C90.9,4.1,82.3,16.5,73.5,28.2C64.7,39.9,55.7,50.9,44.7,59.3C33.7,67.7,20.7,73.5,7.5,74.6C-5.7,75.7,-19.1,72.1,-31.8,65.7C-44.5,59.3,-56.5,50.1,-66.2,38.5C-75.9,26.9,-83.3,12.9,-83.8,-1.4C-84.3,-15.7,-77.9,-30.3,-67.9,-41.8C-57.9,-53.3,-44.3,-61.7,-30.8,-68.4C-17.3,-75.1,-3.9,-80.1,8.3,-78.8L20.5,-77.5"
+                      transform="translate(100 100)"
+                    />
+                  </clipPath>
+                </defs>
+                <image
+                  href="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop"
+                  width="200"
+                  height="200"
+                  clipPath="url(#blob-mask)"
+                  preserveAspectRatio="xMidYMid slice"
+                />
+                <path
+                  d="M45.7,-76.3C58.9,-69.3,69.1,-58.3,77.6,-46.3C86.1,-34.3,92.8,-21.3,91.9,-8.6C90.9,4.1,82.3,16.5,73.5,28.2C64.7,39.9,55.7,50.9,44.7,59.3C33.7,67.7,20.7,73.5,7.5,74.6C-5.7,75.7,-19.1,72.1,-31.8,65.7C-44.5,59.3,-56.5,50.1,-66.2,38.5C-75.9,26.9,-83.3,12.9,-83.8,-1.4C-84.3,-15.7,-77.9,-30.3,-67.9,-41.8C-57.9,-53.3,-44.3,-61.7,-30.8,-68.4C-17.3,-75.1,-3.9,-80.1,8.3,-78.8L20.5,-77.5"
+                  transform="translate(100 100)"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="0.5"
+                />
+              </svg>
+            </div>
+            <div className="absolute bottom-8 left-8">
+              <span className="font-instrument text-2xl italic">
+                Human-Centric
+              </span>
+            </div>
           </div>
+
+          {/* 3. Performance & Analytics - Periwinkle */}
+          <div className="col-span-1 md:col-span-6 bg-periwinkle rounded-[24px] p-8 md:p-12 min-h-[400px] flex flex-col relative overflow-hidden group">
+            <h2 className="font-instrument text-4xl mb-6 relative z-10">
+              Performance e Análises
+            </h2>
+            <div className="relative z-10 text-ink/80 max-w-sm space-y-4">
+              <p className="text-lg">
+                Transforme dados brutos em insights acionáveis. Nosso loop de
+                feedback contínuo garante que sua organização evolua.
+              </p>
+              <ul className="text-sm font-medium space-y-2 border-l border-ink/20 pl-4 mt-4">
+                <li>KPIs em Tempo Real</li>
+                <li>Avaliações 360 Graus</li>
+                <li>Relatórios Estratégicos</li>
+                <li>Segurança RLS & Escalabilidade</li>
+              </ul>
+            </div>
+
+            {/* SVG Flow Diagram */}
+            <div className="absolute right-0 bottom-0 w-full h-1/2 md:w-1/2 md:h-full opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 300 200"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <marker
+                    id="arrowhead"
+                    markerWidth="10"
+                    markerHeight="7"
+                    refX="0"
+                    refY="3.5"
+                    orient="auto"
+                  >
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#1A1A18" />
+                  </marker>
+                </defs>
+                <path
+                  d="M50,150 C50,100 100,100 150,100"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="1"
+                  markerEnd="url(#arrowhead)"
+                  className="animate-[dash_3s_linear_infinite]"
+                  strokeDasharray="5,5"
+                />
+                <path
+                  d="M150,100 C200,100 250,50 250,50"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="1"
+                  markerEnd="url(#arrowhead)"
+                  className="animate-[dash_3s_linear_infinite]"
+                  strokeDasharray="5,5"
+                />
+
+                <circle cx="50" cy="150" r="4" fill="#1A1A18" />
+                <text
+                  x="50"
+                  y="170"
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontFamily="Inter"
+                >
+                  DATA IN
+                </text>
+
+                <circle cx="150" cy="100" r="20" fill="none" stroke="#1A1A18" />
+                <text
+                  x="150"
+                  y="104"
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontFamily="Inter"
+                >
+                  PROCESS
+                </text>
+
+                <circle cx="250" cy="50" r="4" fill="#1A1A18" />
+                <text
+                  x="250"
+                  y="40"
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontFamily="Inter"
+                >
+                  SCALE
+                </text>
+              </svg>
+            </div>
+          </div>
+
+          {/* 4. Capabilities / Operations - Sage */}
+          <div className="col-span-1 md:col-span-6 bg-sage rounded-[24px] p-8 md:p-12 min-h-[400px] flex flex-col relative overflow-hidden group">
+            <h2 className="font-instrument text-4xl mb-6 relative z-10">
+              Ferramentas Operacionais
+            </h2>
+            <div className="relative z-10 text-ink/80 max-w-sm space-y-6">
+              <div>
+                <h3 className="font-bold mb-1 uppercase text-xs tracking-widest">
+                  Recrutamento
+                </h3>
+                <p className="text-sm">
+                  Gestão completa de vagas, pipeline de candidatos e portal
+                  público de carreiras.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-bold mb-1 uppercase text-xs tracking-widest">
+                  Colaboradores
+                </h3>
+                <p className="text-sm">
+                  Banco de dados seguro, documentos, ponto digital e gestão de
+                  férias simplificada.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-bold mb-1 uppercase text-xs tracking-widest">
+                  Administração
+                </h3>
+                <p className="text-sm">
+                  Controle de acesso RBAC, múltiplas organizações e gestão de
+                  visitantes.
+                </p>
+              </div>
+            </div>
+
+            {/* Interactive SVG Hover Effects */}
+            <div className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-40 group-hover:opacity-80 transition-opacity duration-700">
+              <svg width="300" height="300" viewBox="0 0 300 300">
+                <path
+                  d="M0,150 Q75,50 150,150 T300,150"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="0.5"
+                  className="animate-[pulse_4s_ease-in-out_infinite]"
+                />
+                <path
+                  d="M0,150 Q75,250 150,150 T300,150"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="0.5"
+                  className="animate-[pulse_4s_ease-in-out_infinite_1s]"
+                />
+                <ellipse
+                  cx="150"
+                  cy="150"
+                  rx="100"
+                  ry="50"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="0.5"
+                  className="animate-spin-slow origin-center"
+                />
+                <ellipse
+                  cx="150"
+                  cy="150"
+                  rx="50"
+                  ry="100"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="0.5"
+                  className="animate-spin-slow origin-center"
+                  style={{ animationDirection: 'reverse' }}
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* 5. CTA - Ink */}
+          <div className="col-span-1 md:col-span-12 bg-ink text-cream rounded-[24px] p-16 md:p-24 text-center relative overflow-hidden flex flex-col items-center justify-center">
+            <h2 className="font-instrument text-5xl md:text-7xl mb-8 relative z-10">
+              Pare de adivinhar.
+            </h2>
+            <p className="text-cream/60 max-w-md text-lg md:text-xl mb-12 relative z-10">
+              Junte-se a organizações que automatizam a burocracia do RH para
+              focar no talento humano.
+            </p>
+
+            <Link to="/signup">
+              <button className="bg-cream text-ink px-8 py-4 rounded-full font-medium hover:bg-salmon transition-colors duration-300 relative z-10 flex items-center gap-2 group">
+                Criar Conta Agora
+                <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </button>
+            </Link>
+
+            {/* Background Texture */}
+            <div className="absolute inset-0 opacity-10">
+              <svg
+                width="100%"
+                height="100%"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <pattern
+                    id="grid"
+                    width="40"
+                    height="40"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <circle cx="2" cy="2" r="1" fill="#F5F2EA" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rotating Fixed Button */}
+      <div className="fixed bottom-8 right-8 z-50 hidden md:block">
+        <Link to="/signup" className="group relative block w-32 h-32">
+          <div className="absolute inset-0 animate-spin-slow group-hover:pause">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+              <path
+                id="circlePath"
+                d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
+                fill="none"
+              />
+              <text fontSize="11" fontWeight="bold" letterSpacing="2">
+                <textPath xlinkHref="#circlePath" fill="#1A1A18">
+                  START NOW • START NOW • START NOW •
+                </textPath>
+              </text>
+            </svg>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-12 h-12 bg-salmon rounded-full group-hover:scale-110 transition-transform duration-300 flex items-center justify-center">
+              <ArrowUpRight className="w-6 h-6 text-ink" />
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      <footer className="px-6 py-8 md:py-12 border-t border-ink/5 mt-12 bg-cream text-ink text-sm font-medium flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>© 2026 Adapta System.</div>
+        <div className="flex gap-6 opacity-60">
+          <span>Terms</span>
+          <span>Privacy</span>
+          <span>Status</span>
         </div>
       </footer>
     </div>
