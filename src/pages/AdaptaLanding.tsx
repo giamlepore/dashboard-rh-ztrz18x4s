@@ -40,7 +40,7 @@ export default function AdaptaLanding() {
       </nav>
 
       {/* Main Content with increased padding top for desktop to avoid overlap with fixed header */}
-      <div className="p-4 md:p-6 lg:p-8 pt-20 md:pt-40 max-w-[1600px] mx-auto">
+      <div className="p-4 md:p-6 lg:p-8 pt-32 md:pt-48 max-w-[1600px] mx-auto">
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
           {/* 1. Hero Card - Salmon */}
@@ -141,7 +141,7 @@ export default function AdaptaLanding() {
                   </clipPath>
                 </defs>
                 <image
-                  href="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop"
+                  href="https://img.usecurling.com/p/1000/1000?q=woman%20working&color=black"
                   width="200"
                   height="200"
                   clipPath="url(#blob-mask)"
