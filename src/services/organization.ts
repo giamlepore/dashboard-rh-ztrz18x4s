@@ -4,6 +4,7 @@ export interface Organization {
   id: string
   nome: string
   created_at: string
+  created_by?: string
 }
 
 export const createOrganization = async (name: string) => {

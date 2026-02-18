@@ -39,12 +39,24 @@ export default function CompleteProfile() {
       let finalRole = inviteOrgId ? 'visitante' : 'Admin'
 
       if (!inviteOrgId) {
-        // User is creating a new organization
-        const orgName = `Organização de ${data.name}`
-        const newOrg = await createOrganization(orgName)
-        finalOrgId = newOrg.id
+        // User is creating a new organization (Admin Flow)
+        try {
+          const orgName = `Organização de ${data.name}`
+          const newOrg = await createOrganization(orgName)
+          finalOrgId = newOrg.id
+        } catch (orgError: any) {
+          console.error('Error creating organization:', orgError)
+          throw new Error(
+            `Erro ao criar organização: ${orgError.message || 'Erro desconhecido'}`,
+          )
+        }
       }
 
+      if (!finalOrgId) {
+        throw new Error('ID da organização não foi gerado.')
+      }
+
+      // Create Employee Record
       await createEmployee({
         nome: data.name,
         email: data.email,
@@ -64,27 +76,30 @@ export default function CompleteProfile() {
         salario: 0,
         tipo_contrato: 'CLT',
         documentos_urls: [],
-        image_gender: 'male',
-        organization_id: finalOrgId!,
+        image_gender: Math.random() > 0.5 ? 'male' : 'female',
+        organization_id: finalOrgId,
       })
 
       // Clean up invite
-      localStorage.removeItem('inviteOrgId')
+      if (inviteOrgId) {
+        localStorage.removeItem('inviteOrgId')
+      }
 
       toast.success('Perfil completado com sucesso!')
       await refreshProfile()
 
-      // Redirect handled by ProtectedRoute, but explicit check here:
+      // Redirect logic based on role
       if (finalRole === 'visitante') {
         navigate('/visitor', { replace: true })
       } else {
         navigate('/', { replace: true })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
       toast.error('Erro ao salvar perfil', {
-        description: 'Tente novamente mais tarde.',
+        description: error.message || 'Verifique os dados e tente novamente.',
       })
+    } finally {
       setLoading(false)
     }
   }
