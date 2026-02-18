@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { format } from 'date-fns'
 
 export interface PerformanceMetric {
   department: string
@@ -19,10 +20,19 @@ export interface RecruitmentMetric {
   fill: string
 }
 
+export interface VacationMetric {
+  employeeName: string
+  startDate: string
+  endDate: string
+  days: number
+  department?: string
+}
+
 export interface ReportsData {
   performance: PerformanceMetric[]
   payroll: PayrollMetric[]
   recruitment: RecruitmentMetric[]
+  upcomingVacations: VacationMetric[]
   stats: {
     totalPayroll: number
     totalEmployees: number
@@ -148,10 +158,38 @@ export const getReportsData = async (): Promise<ReportsData> => {
         fill: `hsl(var(--chart-${(index % 5) + 1}))`,
       }))
 
+    // 4. Fetch Upcoming Vacations
+    const todayStr = format(new Date(), 'yyyy-MM-dd')
+    const { data: vacations, error: vacError } = await supabase
+      .from('ferias')
+      .select('data_inicio, data_fim, colaboradores(nome, departamento)')
+      .gte('data_inicio', todayStr)
+      .eq('status', 'Aprovada')
+      .order('data_inicio', { ascending: true })
+      .limit(5)
+
+    if (vacError) throw vacError
+
+    const upcomingVacations: VacationMetric[] =
+      vacations?.map((v: any) => {
+        const start = new Date(v.data_inicio)
+        const end = new Date(v.data_fim)
+        const diffTime = Math.abs(end.getTime() - start.getTime())
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return {
+          employeeName: v.colaboradores?.nome || 'Colaborador',
+          department: v.colaboradores?.departamento || 'Geral',
+          startDate: v.data_inicio,
+          endDate: v.data_fim,
+          days: diffDays,
+        }
+      }) || []
+
     return {
       performance,
       payroll,
       recruitment,
+      upcomingVacations,
       stats: {
         totalPayroll,
         totalEmployees,
