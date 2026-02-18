@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   Search,
   Users,
@@ -76,7 +75,7 @@ export default function Colaboradores() {
   const [view, setView] = useState<'cards' | 'table'>('cards')
 
   const { toast } = useToast()
-  const { role, isEmployee, isAdmin, isManager } = useUserRole()
+  const { role, isEmployee, isAdmin, isManager, organizationId } = useUserRole()
   const { user } = useAuth()
 
   const fetchEmployees = async () => {
@@ -108,25 +107,34 @@ export default function Colaboradores() {
   )
 
   const handleSubmit = async (data: EmployeeFormValues, files: File[]) => {
+    if (!organizationId) {
+      toast({
+        title: 'Erro de organização',
+        description: 'Não foi possível identificar a organização.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
       const empData = {
-        nome: data.name,
+        nome: data.nome,
         cpf: data.cpf,
-        rg: data.rg,
-        data_nascimento: format(data.birthDate, 'yyyy-MM-dd'),
-        endereco: data.address,
+        rg: data.rg || '',
+        data_nascimento: format(data.data_nascimento, 'yyyy-MM-dd'),
+        endereco: data.endereco,
         email: data.email,
-        telefone: data.phone,
-        cargo: data.role,
-        departamento: data.dept,
-        data_admissao: format(data.admissionDate, 'yyyy-MM-dd'),
-        salario: data.salary,
-        tipo_contrato: data.contractType,
+        telefone: data.telefone,
+        cargo: data.cargo,
+        departamento: data.departamento,
+        data_admissao: format(data.data_admissao, 'yyyy-MM-dd'),
+        salario: data.salario,
+        tipo_contrato: data.tipo_contrato,
         status: data.status,
-        image_gender:
-          editingEmployee?.image_gender ||
-          (Math.random() > 0.5 ? 'male' : 'female'),
+        image_gender: data.image_gender,
+        role: data.role,
+        organization_id: organizationId,
         documentos_urls: editingEmployee?.documentos_urls || [],
       }
 
@@ -134,13 +142,13 @@ export default function Colaboradores() {
         await updateEmployee(editingEmployee.id, empData)
         toast({
           title: 'Colaborador atualizado',
-          description: `${data.name} atualizado.`,
+          description: `${data.nome} atualizado.`,
         })
       } else {
         await createEmployee(empData)
         toast({
           title: 'Colaborador criado',
-          description: `${data.name} criado.`,
+          description: `${data.nome} criado.`,
         })
       }
 
@@ -186,19 +194,21 @@ export default function Colaboradores() {
   const deptCount = new Set(employees.map((e) => e.departamento)).size
 
   const mapToFormValues = (emp: Employee): EmployeeFormValues => ({
-    name: emp.nome,
+    nome: emp.nome,
     cpf: emp.cpf,
     rg: emp.rg,
-    birthDate: new Date(emp.data_nascimento),
-    address: emp.endereco,
+    data_nascimento: new Date(emp.data_nascimento),
+    endereco: emp.endereco,
     email: emp.email,
-    phone: emp.telefone,
-    role: emp.cargo,
-    dept: emp.departamento,
-    admissionDate: new Date(emp.data_admissao),
-    salary: emp.salario,
-    contractType: emp.tipo_contrato,
+    telefone: emp.telefone,
+    cargo: emp.cargo,
+    departamento: emp.departamento,
+    data_admissao: new Date(emp.data_admissao),
+    salario: emp.salario,
+    tipo_contrato: emp.tipo_contrato,
     status: emp.status,
+    role: emp.role as any,
+    image_gender: (emp.image_gender as 'male' | 'female') || 'male',
   })
 
   return (
@@ -291,9 +301,9 @@ export default function Colaboradores() {
                       Colaborador
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 border-none shadow-2xl bg-[#FCFAF7]">
                     <DialogHeader>
-                      <DialogTitle className="font-instrument text-3xl">
+                      <DialogTitle className="font-instrument text-4xl text-ink">
                         {editingEmployee
                           ? 'Editar Colaborador'
                           : 'Novo Colaborador'}
