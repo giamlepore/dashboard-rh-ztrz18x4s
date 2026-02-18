@@ -6,17 +6,21 @@ import {
   PublicCandidateForm,
   PublicCandidateFormValues,
 } from '@/components/forms/PublicCandidateForm'
+import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import { Briefcase, Building2, CheckCircle2 } from 'lucide-react'
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  MapPin,
+  Banknote,
+  Clock,
+  ArrowLeft,
+  Share2,
+  Loader2,
+  AlertCircle,
+} from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 export default function PublicJob() {
   const { id } = useParams<{ id: string }>()
@@ -33,7 +37,8 @@ export default function PublicJob() {
         const data = await getJobById(id)
         if (data.status !== 'Aberta') {
           toast.error('Esta vaga não está mais disponível.')
-          navigate('/not-found')
+          // We can show a specific state instead of redirecting immediately
+          setLoading(false)
           return
         }
         setJob(data)
@@ -45,7 +50,7 @@ export default function PublicJob() {
       }
     }
     fetchJob()
-  }, [id, navigate])
+  }, [id])
 
   const handleSubmit = async (data: PublicCandidateFormValues, file: File) => {
     if (!job) return
@@ -65,6 +70,7 @@ export default function PublicJob() {
       )
       setSuccess(true)
       toast.success('Candidatura enviada com sucesso!')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (error) {
       console.error('Error submitting application:', error)
       toast.error('Erro ao enviar candidatura. Tente novamente.')
@@ -73,125 +79,204 @@ export default function PublicJob() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 0,
+    }).format(value)
   }
 
-  if (!job) {
+  // Loading State
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 flex-col gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Vaga não encontrada
-        </h1>
-        <p className="text-gray-600">
-          A vaga que você procura não existe ou foi encerrada.
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cream gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-salmon" />
+        <p className="text-ink/60 font-medium font-instrument text-lg italic">
+          Carregando oportunidade...
         </p>
       </div>
     )
   }
 
+  // Error/Not Found State
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center space-y-6">
+          <div className="w-20 h-20 bg-salmon/10 rounded-full flex items-center justify-center mx-auto">
+            <AlertCircle className="h-10 w-10 text-salmon" />
+          </div>
+          <h1 className="font-instrument text-4xl text-ink">
+            Vaga não disponível
+          </h1>
+          <p className="text-ink/60 text-lg">
+            A vaga que você está procurando pode ter sido preenchida ou não
+            existe mais.
+          </p>
+          <Button
+            onClick={() => navigate('/adapta')}
+            className="rounded-full bg-ink text-cream hover:bg-salmon hover:text-ink transition-colors h-12 px-8 text-base"
+          >
+            Voltar ao Início
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Success State
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 animate-fade-in">
-        <Card className="w-full max-w-md text-center shadow-lg border-emerald-100">
-          <CardHeader>
-            <div className="mx-auto bg-emerald-100 p-4 rounded-full mb-4">
-              <CheckCircle2 className="h-10 w-10 text-emerald-600" />
-            </div>
-            <CardTitle className="text-2xl text-emerald-800">
-              Candidatura Recebida!
-            </CardTitle>
-            <CardDescription className="text-base mt-2">
-              Recebemos suas informações para a vaga de{' '}
-              <strong>{job.titulo}</strong>.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <p className="text-gray-600">
-              Nossa equipe de RH analisará seu perfil e entrará em contato caso
-              haja compatibilidade com a vaga.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Obrigado pelo interesse!
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-cream flex items-center justify-center p-4 animate-fade-in">
+        <div className="max-w-lg w-full bg-white rounded-[32px] p-8 md:p-12 text-center shadow-elevation border border-ink/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-sage/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+          <div className="w-24 h-24 bg-sage/20 rounded-full flex items-center justify-center mx-auto mb-8 relative z-10">
+            <CheckCircle2 className="h-12 w-12 text-green-700" />
+          </div>
+
+          <h2 className="font-instrument text-4xl md:text-5xl text-ink mb-4 relative z-10">
+            Candidatura Recebida!
+          </h2>
+
+          <p className="text-ink/70 text-lg mb-8 relative z-10">
+            Agradecemos seu interesse na vaga de{' '}
+            <strong className="text-ink">{job.titulo}</strong>. Nossa equipe de
+            RH analisará seu perfil em breve.
+          </p>
+
+          <Button
+            onClick={() => navigate('/adapta')}
+            variant="outline"
+            className="rounded-full border-ink/10 h-12 px-8 text-base hover:bg-ink hover:text-cream relative z-10"
+          >
+            Voltar ao site
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
-        {/* Job Details Header */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8 space-y-4">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{job.titulo}</h1>
-              <div className="flex flex-wrap items-center gap-4 mt-2 text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Building2 className="h-4 w-4" /> {job.departamento}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4" /> {job.tipo_contrato}
-                </span>
-                {job.salario > 0 && (
-                  <span className="flex items-center gap-1 font-medium text-emerald-600">
-                    R${' '}
-                    {job.salario.toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                    })}
-                  </span>
-                )}
-              </div>
-            </div>
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/20 text-sm px-3 py-1">
-              Vaga Aberta
-            </Badge>
+    <div className="min-h-screen bg-cream font-sans text-ink selection:bg-salmon selection:text-ink">
+      {/* Navigation */}
+      <nav className="w-full px-6 py-6 flex items-center justify-between max-w-7xl mx-auto">
+        <div
+          onClick={() => navigate('/adapta')}
+          className="font-instrument text-2xl font-medium tracking-tight cursor-pointer hover:opacity-70 transition-opacity"
+        >
+          Adapta.
+        </div>
+        <div className="flex gap-4">
+          {/* Placeholder for future nav items */}
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-6 pb-20">
+        {/* Hero Section */}
+        <div className="py-12 md:py-20 space-y-8 animate-fade-in-up">
+          <div className="flex flex-wrap items-center gap-3 text-sm font-medium uppercase tracking-wider text-ink/60">
+            <span className="bg-white px-4 py-1.5 rounded-full shadow-subtle border border-ink/5 flex items-center gap-2">
+              <Building2 className="w-3.5 h-3.5" />
+              {job.departamento}
+            </span>
+            <span className="bg-white px-4 py-1.5 rounded-full shadow-subtle border border-ink/5 flex items-center gap-2">
+              <Briefcase className="w-3.5 h-3.5" />
+              {job.tipo_contrato}
+            </span>
           </div>
 
-          <Separator />
+          <h1 className="font-instrument text-5xl md:text-7xl lg:text-8xl leading-[0.9] text-ink max-w-4xl tracking-tight">
+            {job.titulo}
+          </h1>
 
-          <div className="space-y-6 pt-2">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Descrição da Vaga</h3>
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {job.descricao || 'Sem descrição detalhada.'}
-              </p>
-            </div>
-
-            {job.requisitos && (
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Requisitos</h3>
-                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                  {job.requisitos}
-                </p>
-              </div>
+          <div className="flex flex-wrap items-center gap-6 md:gap-8 text-lg text-ink/70 pt-2">
+            {job.salario > 0 && (
+              <span className="flex items-center gap-2">
+                <Banknote className="w-5 h-5 text-salmon" />
+                {formatCurrency(job.salario)}
+              </span>
             )}
+            <span className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-salmon" />
+              Presencial / Híbrido
+            </span>
+            <span className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-salmon" />
+              Vaga Aberta
+            </span>
           </div>
         </div>
 
-        {/* Application Form */}
-        <Card className="shadow-lg border-primary/10">
-          <CardHeader className="bg-primary/5 border-b">
-            <CardTitle>Candidate-se agora</CardTitle>
-            <CardDescription>
-              Preencha os dados abaixo e anexe seu currículo para participar do
-              processo seletivo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 md:p-8">
-            <PublicCandidateForm
-              onSubmit={handleSubmit}
-              isLoading={submitting}
-            />
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+          {/* Left Column - Content */}
+          <div className="lg:col-span-7 space-y-16 animate-fade-in-up delay-100">
+            <section className="space-y-6">
+              <h3 className="font-instrument text-3xl md:text-4xl text-ink relative inline-block">
+                Sobre a vaga
+                <span className="absolute -bottom-2 left-0 w-1/3 h-1 bg-salmon/30 rounded-full" />
+              </h3>
+              <div className="prose prose-lg prose-gray max-w-none text-ink/80 leading-relaxed whitespace-pre-wrap font-sans">
+                {job.descricao || 'Nenhuma descrição detalhada disponível.'}
+              </div>
+            </section>
+
+            {job.requisitos && (
+              <section className="space-y-6">
+                <h3 className="font-instrument text-3xl md:text-4xl text-ink relative inline-block">
+                  Requisitos
+                  <span className="absolute -bottom-2 left-0 w-1/3 h-1 bg-sage/50 rounded-full" />
+                </h3>
+                <div className="prose prose-lg prose-gray max-w-none text-ink/80 leading-relaxed whitespace-pre-wrap font-sans">
+                  {job.requisitos}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* Right Column - Application Form */}
+          <div className="lg:col-span-5 relative animate-fade-in-up delay-200">
+            <div className="sticky top-8">
+              <div className="bg-white rounded-[32px] p-8 md:p-10 shadow-elevation border border-ink/5 relative overflow-hidden">
+                {/* Decorative blob */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-salmon/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+
+                <div className="relative z-10 mb-8">
+                  <h3 className="font-instrument text-3xl mb-3">
+                    Candidate-se agora
+                  </h3>
+                  <p className="text-ink/60">
+                    Preencha os campos abaixo para participar do processo
+                    seletivo.
+                  </p>
+                </div>
+
+                <div className="relative z-10">
+                  <PublicCandidateForm
+                    onSubmit={handleSubmit}
+                    isLoading={submitting}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8 flex justify-center text-ink/40 text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Processo Seletivo Ativo
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-ink/5 mt-20 py-12 bg-white/50">
+        <div className="max-w-7xl mx-auto px-6 text-center text-ink/40 font-instrument italic">
+          © 2026 Adapta Recruitment System. All rights reserved.
+        </div>
+      </footer>
     </div>
   )
 }

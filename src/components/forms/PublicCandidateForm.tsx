@@ -12,7 +12,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Loader2, UploadCloud } from 'lucide-react'
+import { Loader2, UploadCloud, FileText, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const formSchema = z.object({
   name: z.string().min(2, 'Nome é obrigatório'),
@@ -33,6 +34,7 @@ export function PublicCandidateForm({
 }: PublicCandidateFormProps) {
   const [file, setFile] = useState<File | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const form = useForm<PublicCandidateFormValues>({
     resolver: zodResolver(formSchema),
@@ -45,6 +47,10 @@ export function PublicCandidateForm({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
+    validateAndSetFile(selectedFile)
+  }
+
+  const validateAndSetFile = (selectedFile: File | undefined) => {
     setFileError(null)
 
     if (selectedFile) {
@@ -68,6 +74,13 @@ export function PublicCandidateForm({
     }
   }
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const droppedFile = e.dataTransfer.files?.[0]
+    validateAndSetFile(droppedFile)
+  }
+
   const handleSubmit = async (data: PublicCandidateFormValues) => {
     if (!file) {
       setFileError('O currículo é obrigatório.')
@@ -79,81 +92,153 @@ export function PublicCandidateForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome Completo *</FormLabel>
+              <FormLabel className="text-ink/80 font-medium">
+                Nome Completo *
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Seu nome" {...field} />
+                <Input
+                  placeholder="Seu nome"
+                  {...field}
+                  className="rounded-xl border-ink/10 bg-cream/30 focus:bg-white transition-all h-12"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email *</FormLabel>
-                <FormControl>
-                  <Input placeholder="seu@email.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefone (Opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-ink/80 font-medium">Email *</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="seu@email.com"
+                  {...field}
+                  className="rounded-xl border-ink/10 bg-cream/30 focus:bg-white transition-all h-12"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="space-y-2">
-          <FormLabel className={fileError ? 'text-destructive' : ''}>
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-ink/80 font-medium">
+                Telefone (Opcional)
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="(00) 00000-0000"
+                  {...field}
+                  className="rounded-xl border-ink/10 bg-cream/30 focus:bg-white transition-all h-12"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="space-y-2 pt-2">
+          <FormLabel
+            className={cn(
+              'text-ink/80 font-medium',
+              fileError && 'text-destructive',
+            )}
+          >
             Currículo (PDF, DOC, DOCX) *
           </FormLabel>
-          <div className="flex items-center gap-4">
-            <Input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={handleFileChange}
-              className="cursor-pointer file:cursor-pointer file:text-primary file:font-semibold"
-            />
-          </div>
-          {fileError && (
-            <p className="text-sm font-medium text-destructive">{fileError}</p>
-          )}
-          {file && !fileError && (
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <UploadCloud className="h-4 w-4" />
-              <span>Arquivo selecionado: {file.name}</span>
+
+          {!file ? (
+            <div
+              className={cn(
+                'border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 group',
+                isDragging
+                  ? 'border-salmon bg-salmon/5'
+                  : 'border-ink/10 hover:border-salmon/50 hover:bg-cream/50',
+                fileError && 'border-destructive/50 bg-destructive/5',
+              )}
+              onDragOver={(e) => {
+                e.preventDefault()
+                setIsDragging(true)
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById('cv-upload')?.click()}
+            >
+              <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3 text-ink/40 group-hover:text-salmon transition-colors">
+                <UploadCloud className="h-5 w-5" />
+              </div>
+              <p className="text-sm text-ink/60 font-medium">
+                Clique para enviar ou arraste aqui
+              </p>
+              <p className="text-xs text-ink/40 mt-1">Máximo 5MB</p>
+              <Input
+                id="cv-upload"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+                className="hidden"
+              />
             </div>
+          ) : (
+            <div className="flex items-center justify-between p-3 bg-white border border-ink/10 rounded-xl shadow-sm">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="w-10 h-10 bg-sage/20 rounded-lg flex items-center justify-center shrink-0">
+                  <FileText className="h-5 w-5 text-green-700" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-ink truncate">
+                    {file.name}
+                  </p>
+                  <p className="text-xs text-ink/40">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-ink/40 hover:text-destructive shrink-0"
+                onClick={() => setFile(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {fileError && (
+            <p className="text-sm font-medium text-destructive mt-1">
+              {fileError}
+            </p>
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="w-full rounded-full h-14 text-base font-medium bg-ink text-cream hover:bg-salmon hover:text-ink transition-all mt-4 shadow-lg hover:shadow-xl"
+          disabled={isLoading}
+        >
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Enviando candidatura...
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Enviando...
             </>
           ) : (
-            'Enviar Candidatura'
+            'Confirmar Candidatura'
           )}
         </Button>
       </form>
