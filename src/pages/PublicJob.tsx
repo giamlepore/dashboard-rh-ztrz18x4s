@@ -15,9 +15,8 @@ import {
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Briefcase, Building2, MapPin, CheckCircle2 } from 'lucide-react'
+import { Briefcase, Building2, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { formatCurrency } from '@/lib/utils' // Assuming this helper exists or I should implement inline
 
 export default function PublicJob() {
   const { id } = useParams<{ id: string }>()
@@ -34,7 +33,7 @@ export default function PublicJob() {
         const data = await getJobById(id)
         if (data.status !== 'Aberta') {
           toast.error('Esta vaga não está mais disponível.')
-          navigate('/not-found') // Or just show a message
+          navigate('/not-found')
           return
         }
         setJob(data)
@@ -97,7 +96,7 @@ export default function PublicJob() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 animate-fade-in">
         <Card className="w-full max-w-md text-center shadow-lg border-emerald-100">
           <CardHeader>
             <div className="mx-auto bg-emerald-100 p-4 rounded-full mb-4">
@@ -127,7 +126,7 @@ export default function PublicJob() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
         {/* Job Details Header */}
         <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8 space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

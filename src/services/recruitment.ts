@@ -114,17 +114,16 @@ export const submitPublicApplication = async (
   } = supabase.storage.from('curriculos').getPublicUrl(filePath)
 
   // 2. Create Candidate Record
-  const { data, error } = await supabase
-    .from('recrutamento')
-    .insert({
-      ...candidate,
-      curriculo_url: publicUrl,
-      status: 'Triagem', // Default status for new public applications
-      image_gender: Math.random() > 0.5 ? 'male' : 'female',
-    })
-    .select()
-    .single()
+  // FIX: Do not use .select() here as anonymous users don't have SELECT permission on the table
+  // This prevents RLS violations for public submissions
+  const { error } = await supabase.from('recrutamento').insert({
+    ...candidate,
+    curriculo_url: publicUrl,
+    status: 'Triagem', // Default status for new public applications
+    image_gender: Math.random() > 0.5 ? 'male' : 'female',
+  })
 
   if (error) throw error
-  return data as Candidate
+
+  // Return void/undefined as we cannot return the inserted row due to RLS
 }
