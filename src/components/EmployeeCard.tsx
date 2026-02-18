@@ -1,9 +1,7 @@
-import { format } from 'date-fns'
 import {
   MoreHorizontal,
   Pencil,
   Trash2,
-  Shield,
   Mail,
   Phone,
   MapPin,
@@ -12,6 +10,7 @@ import { Employee } from '@/services/employees'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +41,7 @@ export function EmployeeCard({
 }: EmployeeCardProps) {
   return (
     <div className="group relative bg-white/50 backdrop-blur-sm border border-ink/5 rounded-[24px] p-6 hover:shadow-elevation hover:bg-white/80 transition-all duration-300 hover:-translate-y-1">
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex items-start gap-4 mb-4">
         <Avatar className="h-16 w-16 border-2 border-white shadow-sm">
           <AvatarImage
             src={`https://img.usecurling.com/ppl/medium?gender=${employee.image_gender || 'male'}&seed=${employee.id}`}
@@ -53,11 +52,14 @@ export function EmployeeCard({
         </Avatar>
         <Badge
           variant="outline"
-          className={`
-            ${employee.status === 'Ativo' ? 'bg-sage/20 text-ink border-sage/50' : ''}
-            ${employee.status === 'Férias' ? 'bg-periwinkle/20 text-ink border-periwinkle/50' : ''}
-            ${employee.status === 'Desligado' ? 'bg-salmon/20 text-ink border-salmon/50' : ''}
-          `}
+          className={cn(
+            'mt-1',
+            employee.status === 'Ativo' && 'bg-sage/20 text-ink border-sage/50',
+            employee.status === 'Férias' &&
+              'bg-periwinkle/20 text-ink border-periwinkle/50',
+            employee.status === 'Desligado' &&
+              'bg-salmon/20 text-ink border-salmon/50',
+          )}
         >
           {employee.status}
         </Badge>
