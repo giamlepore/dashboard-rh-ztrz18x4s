@@ -12,6 +12,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   Users,
   UserPlus,
@@ -23,10 +24,12 @@ import {
   Filter,
   History,
   Building,
+  Shield,
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useUserRole } from '@/hooks/use-user-role'
+import { InviteCollaboratorDialog } from '@/components/InviteCollaboratorDialog'
 
 const menuGroups = [
   {
@@ -91,7 +94,7 @@ const recentItems = [
 export function AppSidebar() {
   const { isMobile } = useSidebar()
   const location = useLocation()
-  const { role, loading, organizationName } = useUserRole()
+  const { role, loading, organizationName, organizationId } = useUserRole()
 
   if (loading) return null
 
@@ -121,8 +124,8 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         {menuGroups.map((group) => {
-          const visibleItems = group.items.filter((item) =>
-            item.roles.includes(role),
+          const visibleItems = group.items.filter(
+            (item) => role && item.roles.includes(role),
           )
 
           if (visibleItems.length === 0) return null
@@ -175,7 +178,34 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden gap-4">
+        {organizationId && (
+          <InviteCollaboratorDialog
+            organizationId={organizationId}
+            organizationName={organizationName}
+            trigger={
+              <Button className="w-full gap-2 shadow-sm" variant="outline">
+                <UserPlus className="h-4 w-4" />
+                Convidar Colaboradores
+              </Button>
+            }
+          />
+        )}
+
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-sidebar-accent/50 border border-sidebar-border">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <Shield className="h-4 w-4" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+              Nível de Acesso
+            </span>
+            <span className="text-sm font-semibold text-foreground capitalize truncate">
+              {role || 'Visitante'}
+            </span>
+          </div>
+        </div>
+
         <div className="text-[10px] text-center text-muted-foreground">
           ADAPTARH v2.6 &copy; 2026
         </div>
