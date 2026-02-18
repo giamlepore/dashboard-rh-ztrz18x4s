@@ -1,14 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { ArrowLeft, Plus, Search, Users, Loader2, Inbox } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -17,29 +10,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu'
-import {
-  Plus,
-  Pencil,
-  MoreVertical,
-  FileText,
-  ArrowLeft,
-  Mail,
-  Phone,
-  Loader2,
-  Download,
-} from 'lucide-react'
-import {
   CandidateForm,
   CandidateFormValues,
 } from '@/components/forms/CandidateForm'
 import { useToast } from '@/hooks/use-toast'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   getCandidates,
   createCandidate,
@@ -50,19 +24,21 @@ import {
 } from '@/services/recruitment'
 import { getJobs, Job } from '@/services/jobs'
 import { useNavigate } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import { CandidateCard } from '@/components/CandidateCard'
 
 export default function Candidatos() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>([])
   const [jobs, setJobs] = useState<Job[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(
     null,
   )
+  const [loading, setLoading] = useState(true)
 
-  // Upload states
+  // Upload/Download states
   const [uploadingId, setUploadingId] = useState<string | null>(null)
-  // Download states
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -72,12 +48,14 @@ export default function Candidatos() {
   const navigate = useNavigate()
 
   const fetchData = async () => {
+    setLoading(true)
     try {
       const [candidatesData, jobsData] = await Promise.all([
         getCandidates(),
         getJobs(),
       ])
       setCandidates(candidatesData)
+      setFilteredCandidates(candidatesData)
       setJobs(jobsData)
     } catch (error) {
       console.error(error)
@@ -86,12 +64,23 @@ export default function Candidatos() {
         description: 'Erro ao carregar dados.',
         variant: 'destructive',
       })
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
     fetchData()
   }, [])
+
+  useEffect(() => {
+    const results = candidates.filter(
+      (c) =>
+        c.nome_candidato.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.email && c.email.toLowerCase().includes(searchTerm.toLowerCase())),
+    )
+    setFilteredCandidates(results)
+  }, [searchTerm, candidates])
 
   const handleSubmit = async (data: CandidateFormValues) => {
     try {
@@ -103,7 +92,7 @@ export default function Candidatos() {
         email: data.email,
         telefone: data.phone,
         vaga_id: data.vaga_id,
-        vaga: jobTitle, // Keeping legacy field populated
+        vaga: jobTitle,
         status: data.status,
       }
 
@@ -155,21 +144,17 @@ export default function Candidatos() {
       setDownloadingId(candidate.id)
       const blob = await downloadCandidateCV(candidate.curriculo_url)
 
-      // Create download link
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
 
-      // Extract extension or default to pdf
       const extension = candidate.curriculo_url.split('.').pop() || 'pdf'
-      // Format filename: name_cv.ext
       const filename = `${candidate.nome_candidato.replace(/\s+/g, '_').toLowerCase()}_cv.${extension}`
 
       link.setAttribute('download', filename)
       document.body.appendChild(link)
       link.click()
 
-      // Cleanup
       link.parentNode?.removeChild(link)
       window.URL.revokeObjectURL(url)
 
@@ -226,23 +211,8 @@ export default function Candidatos() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Aprovado':
-      case 'Contratado':
-        return 'default' // Primary/Black
-      case 'Reprovado':
-      case 'Recusado':
-        return 'destructive'
-      case 'Entrevista':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
-
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-fade-in">
+    <div className="min-h-screen bg-cream font-sans text-ink pb-12">
       <input
         type="file"
         ref={fileInputRef}
@@ -251,218 +221,164 @@ export default function Candidatos() {
         onChange={handleFileChange}
       />
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-center gap-3">
+      <nav className="sticky top-0 left-0 w-full z-40 mix-blend-difference text-cream px-6 py-4 flex items-center justify-between pointer-events-none bg-cream/5 backdrop-blur-sm md:bg-transparent">
+        <div className="pointer-events-auto flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/recrutamento')}
+            className="hover:bg-ink/10 text-ink"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Candidatos</h1>
-            <p className="text-muted-foreground text-sm">
-              Gerencie os processos seletivos e candidatos.
-            </p>
+          <span className="text-xl font-medium tracking-tight font-instrument text-ink">
+            Candidatos.
+          </span>
+        </div>
+      </nav>
+
+      <div className="px-4 md:px-6 lg:px-8 pt-6 max-w-[1600px] mx-auto animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
+          {/* Hero Section */}
+          <div className="col-span-1 md:col-span-8 bg-sage rounded-[24px] p-8 md:p-12 relative overflow-hidden min-h-[300px] flex flex-col justify-between group">
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+              <svg
+                className="w-[200%] h-full animate-drift"
+                viewBox="0 0 200 100"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0,50 Q50,110 100,50 T200,50"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+                <path
+                  d="M0,80 Q50,140 100,80 T200,80"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+              </svg>
+            </div>
+            <div className="relative z-10">
+              <h1 className="font-instrument text-5xl md:text-7xl leading-[0.9] tracking-tight text-ink max-w-2xl">
+                Talentos & <br />
+                <span className="italic">Potencial</span>
+              </h1>
+              <p className="text-ink/80 text-lg mt-4 max-w-md font-medium">
+                Acompanhe o desenvolvimento e a jornada de cada candidato em seu
+                pipeline.
+              </p>
+            </div>
+            <div className="relative z-10 flex gap-8 mt-8">
+              <div>
+                <span className="block font-instrument text-4xl">
+                  {candidates.length}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  Total
+                </span>
+              </div>
+              <div>
+                <span className="block font-instrument text-4xl">
+                  {candidates.filter((c) => c.status === 'Entrevista').length}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  Em Entrevista
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions Section */}
+          <div className="col-span-1 md:col-span-4 flex flex-col gap-4">
+            <div className="bg-white/50 backdrop-blur-sm border border-ink/5 rounded-[24px] p-6 flex-1 flex flex-col justify-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-ink/40" />
+                <Input
+                  placeholder="Buscar por nome ou email..."
+                  className="pl-10 bg-cream/50 border-ink/10 h-10 rounded-xl focus:ring-sage"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <Dialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                  setIsDialogOpen(open)
+                  if (!open) setEditingCandidate(null)
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button className="w-full h-12 rounded-xl bg-ink text-cream hover:bg-sage hover:text-ink transition-all font-medium text-base">
+                    <Plus className="mr-2 h-5 w-5" /> Adicionar Candidato
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="font-instrument text-3xl">
+                      {editingCandidate ? 'Editar Candidato' : 'Novo Candidato'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <CandidateForm
+                    initialData={editingCandidate}
+                    onSubmit={handleSubmit}
+                    onCancel={() => setIsDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Decorative Stat */}
+            <div className="bg-salmon rounded-[24px] p-6 flex items-center justify-between relative overflow-hidden h-32">
+              <div className="relative z-10">
+                <span className="block font-instrument text-2xl">
+                  Contratados
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-60">
+                  Este Mês
+                </span>
+              </div>
+              <Users className="w-16 h-16 opacity-20 absolute right-[-10px] bottom-[-10px]" />
+            </div>
+          </div>
+
+          {/* Grid of Candidates */}
+          <div className="col-span-1 md:col-span-12 mt-4">
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-10 w-10 animate-spin text-salmon" />
+              </div>
+            ) : filteredCandidates.length === 0 ? (
+              <div className="text-center py-20 bg-ink/5 rounded-[24px] flex flex-col items-center justify-center gap-4">
+                <Inbox className="h-12 w-12 text-ink/20" />
+                <p className="font-instrument text-2xl text-ink/40 italic">
+                  Nenhum candidato encontrado.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {filteredCandidates.map((candidate) => (
+                  <CandidateCard
+                    key={candidate.id}
+                    candidate={candidate}
+                    onEdit={(c) => {
+                      setEditingCandidate(c)
+                      setIsDialogOpen(true)
+                    }}
+                    onStatusChange={handleStatusChange}
+                    onCVClick={handleCVClick}
+                    onDownloadCV={handleDownloadCV}
+                    uploadingId={uploadingId}
+                    downloadingId={downloadingId}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        <Dialog
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open)
-            if (!open) setEditingCandidate(null)
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Adicionar Candidato
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingCandidate ? 'Editar Candidato' : 'Novo Candidato'}
-              </DialogTitle>
-            </DialogHeader>
-            <CandidateForm
-              initialData={editingCandidate}
-              onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Candidato</TableHead>
-              <TableHead>Contatos</TableHead>
-              <TableHead>Vaga</TableHead>
-              <TableHead>Etapa</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {candidates.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center h-32 text-muted-foreground"
-                >
-                  Nenhum candidato encontrado.
-                </TableCell>
-              </TableRow>
-            ) : (
-              candidates.map((candidate) => (
-                <TableRow key={candidate.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage
-                          src={`https://img.usecurling.com/ppl/thumbnail?gender=${candidate.image_gender}&seed=${candidate.id}`}
-                        />
-                        <AvatarFallback>
-                          {candidate.nome_candidato.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {candidate.nome_candidato}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          Adicionado em{' '}
-                          {new Date(candidate.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1 text-sm">
-                      {candidate.email && (
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Mail className="h-3 w-3" /> {candidate.email}
-                        </div>
-                      )}
-                      {candidate.telefone && (
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Phone className="h-3 w-3" /> {candidate.telefone}
-                        </div>
-                      )}
-                      {!candidate.email && !candidate.telefone && (
-                        <span className="text-muted-foreground text-xs italic">
-                          Sem contato
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {candidate.vagas?.titulo || candidate.vaga}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(candidate.status)}>
-                      {candidate.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="hidden md:flex"
-                        title={
-                          candidate.curriculo_url
-                            ? 'Atualizar Currículo'
-                            : 'Enviar Currículo'
-                        }
-                        onClick={() => handleCVClick(candidate.id)}
-                        disabled={uploadingId === candidate.id}
-                      >
-                        {uploadingId === candidate.id ? (
-                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                        ) : (
-                          <FileText
-                            className={cn(
-                              'h-4 w-4 mr-1',
-                              candidate.curriculo_url && 'text-blue-600',
-                            )}
-                          />
-                        )}
-                        CV
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setEditingCandidate(candidate)
-                              setIsDialogOpen(true)
-                            }}
-                          >
-                            <Pencil className="h-4 w-4 mr-2" /> Editar
-                          </DropdownMenuItem>
-
-                          {candidate.curriculo_url && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleDownloadCV(candidate)}
-                                disabled={downloadingId === candidate.id}
-                              >
-                                {downloadingId === candidate.id ? (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                  <Download className="h-4 w-4 mr-2" />
-                                )}
-                                Baixar CV
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                            </>
-                          )}
-
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(candidate.id, 'Triagem')
-                            }
-                          >
-                            Mover para Triagem
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(candidate.id, 'Entrevista')
-                            }
-                          >
-                            Mover para Entrevista
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(candidate.id, 'Aprovado')
-                            }
-                          >
-                            Marcar como Aprovado
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(candidate.id, 'Reprovado')
-                            }
-                          >
-                            Marcar como Reprovado
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
       </div>
     </div>
   )

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Plus,
+  ArrowLeft,
+  Search,
+  Briefcase,
+  Loader2,
+  Inbox,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -16,37 +16,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import {
-  Plus,
-  Pencil,
-  ArrowLeft,
-  Link as LinkIcon,
-  ExternalLink,
-} from 'lucide-react'
 import { JobForm, JobFormValues } from '@/components/forms/JobForm'
 import { useToast } from '@/hooks/use-toast'
 import { getJobs, createJob, updateJob, Job } from '@/services/jobs'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { useNavigate } from 'react-router-dom'
-import { cn } from '@/lib/utils'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { JobCard } from '@/components/JobCard'
 
 export default function Vagas() {
   const [jobs, setJobs] = useState<Job[]>([])
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingJob, setEditingJob] = useState<Job | null>(null)
+  const [loading, setLoading] = useState(true)
+
   const { toast } = useToast()
   const navigate = useNavigate()
 
   const fetchJobs = async () => {
+    setLoading(true)
     try {
       const data = await getJobs()
       setJobs(data)
+      setFilteredJobs(data)
     } catch (error) {
       console.error(error)
       toast({
@@ -54,12 +46,23 @@ export default function Vagas() {
         description: 'Não foi possível carregar as vagas.',
         variant: 'destructive',
       })
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
     fetchJobs()
   }, [])
+
+  useEffect(() => {
+    const results = jobs.filter(
+      (job) =>
+        job.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.departamento.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    setFilteredJobs(results)
+  }, [searchTerm, jobs])
 
   const handleSubmit = async (data: JobFormValues) => {
     try {
@@ -94,158 +97,164 @@ export default function Vagas() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-cream font-sans text-ink pb-12">
+      <nav className="sticky top-0 left-0 w-full z-40 mix-blend-difference text-cream px-6 py-4 flex items-center justify-between pointer-events-none bg-cream/5 backdrop-blur-sm md:bg-transparent">
+        <div className="pointer-events-auto flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/recrutamento')}
+            className="hover:bg-ink/10 text-ink"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Gestão de Vagas
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Visualize e gerencie oportunidades em aberto.
-            </p>
+          <span className="text-xl font-medium tracking-tight font-instrument text-ink">
+            Vagas.
+          </span>
+        </div>
+      </nav>
+
+      <div className="px-4 md:px-6 lg:px-8 pt-6 max-w-[1600px] mx-auto animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
+          {/* Hero Section */}
+          <div className="col-span-1 md:col-span-8 bg-salmon rounded-[24px] p-8 md:p-12 relative overflow-hidden min-h-[300px] flex flex-col justify-between group">
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+              <svg
+                className="w-[200%] h-full animate-drift"
+                viewBox="0 0 200 100"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0,20 Q50,80 100,20 T200,20"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+                <path
+                  d="M0,80 Q50,140 100,80 T200,80"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+              </svg>
+            </div>
+            <div className="relative z-10">
+              <h1 className="font-instrument text-5xl md:text-7xl leading-[0.9] tracking-tight text-ink max-w-2xl">
+                Oportunidades & <br />
+                <span className="italic">Carreiras</span>
+              </h1>
+              <p className="text-ink/80 text-lg mt-4 max-w-md font-medium">
+                Defina o futuro da organização abrindo portas para novos
+                talentos.
+              </p>
+            </div>
+            <div className="relative z-10 flex gap-8 mt-8">
+              <div>
+                <span className="block font-instrument text-4xl">
+                  {jobs.filter((j) => j.status === 'Aberta').length}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  Abertas
+                </span>
+              </div>
+              <div>
+                <span className="block font-instrument text-4xl">
+                  {jobs.length}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  Total
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions Section */}
+          <div className="col-span-1 md:col-span-4 flex flex-col gap-4">
+            <div className="bg-white/50 backdrop-blur-sm border border-ink/5 rounded-[24px] p-6 flex-1 flex flex-col justify-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-ink/40" />
+                <Input
+                  placeholder="Buscar por título ou departamento..."
+                  className="pl-10 bg-cream/50 border-ink/10 h-10 rounded-xl focus:ring-salmon"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <Dialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                  setIsDialogOpen(open)
+                  if (!open) setEditingJob(null)
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button className="w-full h-12 rounded-xl bg-ink text-cream hover:bg-salmon hover:text-ink transition-all font-medium text-base">
+                    <Plus className="mr-2 h-5 w-5" /> Criar Nova Vaga
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="font-instrument text-3xl">
+                      {editingJob ? 'Editar Vaga' : 'Nova Vaga'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <JobForm
+                    initialData={editingJob}
+                    onSubmit={handleSubmit}
+                    onCancel={() => setIsDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Decorative Stat */}
+            <div className="bg-periwinkle rounded-[24px] p-6 flex items-center justify-between relative overflow-hidden h-32">
+              <div className="relative z-10">
+                <span className="block font-instrument text-2xl">
+                  Visualizações
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-60">
+                  Página Pública
+                </span>
+              </div>
+              <Briefcase className="w-16 h-16 opacity-20 absolute right-[-10px] bottom-[-10px]" />
+            </div>
+          </div>
+
+          {/* Grid of Jobs */}
+          <div className="col-span-1 md:col-span-12 mt-4">
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-10 w-10 animate-spin text-salmon" />
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="text-center py-20 bg-ink/5 rounded-[24px] flex flex-col items-center justify-center gap-4">
+                <Inbox className="h-12 w-12 text-ink/20" />
+                <p className="font-instrument text-2xl text-ink/40 italic">
+                  Nenhuma vaga encontrada.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {filteredJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    onEdit={(j) => {
+                      setEditingJob(j)
+                      setIsDialogOpen(true)
+                    }}
+                    onCopyLink={copyPublicLink}
+                    onViewPublic={(id) =>
+                      window.open(`/vagas/publica/${id}`, '_blank')
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        <Dialog
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open)
-            if (!open) setEditingJob(null)
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Nova Vaga
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>
-                {editingJob ? 'Editar Vaga' : 'Nova Vaga'}
-              </DialogTitle>
-            </DialogHeader>
-            <JobForm
-              initialData={editingJob}
-              onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="rounded-md border bg-card overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Título</TableHead>
-              <TableHead>Departamento</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Candidatos</TableHead>
-              <TableHead>Publicação</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {jobs.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center h-32 text-muted-foreground"
-                >
-                  Nenhuma vaga encontrada.
-                </TableCell>
-              </TableRow>
-            ) : (
-              jobs.map((job) => (
-                <TableRow key={job.id}>
-                  <TableCell className="font-medium">{job.titulo}</TableCell>
-                  <TableCell>{job.departamento}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        job.status === 'Aberta' ? 'default' : 'secondary'
-                      }
-                      className={cn(
-                        job.status === 'Aberta' &&
-                          'bg-emerald-600 hover:bg-emerald-700',
-                      )}
-                    >
-                      {job.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">
-                        {job.candidates_count || 0}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        inscritos
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(job.created_at), "dd 'de' MMM, yyyy", {
-                      locale: ptBR,
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right whitespace-nowrap">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => copyPublicLink(job.id)}
-                          disabled={job.status !== 'Aberta'}
-                          className={
-                            job.status !== 'Aberta' ? 'opacity-50' : ''
-                          }
-                        >
-                          <LinkIcon className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Copiar Link Público</TooltipContent>
-                    </Tooltip>
-
-                    {job.status === 'Aberta' && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() =>
-                              window.open(`/vagas/publica/${job.id}`, '_blank')
-                            }
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Ver página pública</TooltipContent>
-                      </Tooltip>
-                    )}
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setEditingJob(job)
-                        setIsDialogOpen(true)
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
       </div>
     </div>
   )
