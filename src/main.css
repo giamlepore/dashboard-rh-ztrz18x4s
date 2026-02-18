@@ -2,6 +2,8 @@
 
 /* CHANGE THE FONT BELOW TO WHATEVER YOU WANT */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+/* Add Fig Mint Design System Fonts */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=VT323&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -61,6 +63,21 @@
     --chart-3: 209 100% 32%;
     --chart-4: 42 100% 50%;
     --chart-5: 33 100% 50%;
+
+    /* Fig Mint Design System Tokens */
+    --vintage-paper: 48 29% 93%;
+    --vintage-text: 0 0% 6%;
+    --chassis-base: 45 18% 84%;
+    --chassis-border: 45 12% 74%;
+    --chassis-shadow: 45 12% 60%;
+
+    /* Rainbow Palette */
+    --rainbow-red: 350 85% 60%;
+    --rainbow-orange: 25 95% 55%; /* #f58220 approx */
+    --rainbow-yellow: 41 98% 57%; /* #fdb827 */
+    --rainbow-green: 107 48% 50%; /* #60bb46 */
+    --rainbow-blue: 200 90% 50%;
+    --rainbow-purple: 270 70% 60%;
   }
 
   .dark {
@@ -240,6 +257,33 @@
     }
   }
 
+  @keyframes scanline {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes flicker {
+    0% {
+      opacity: 0.95;
+    }
+    5% {
+      opacity: 0.85;
+    }
+    10% {
+      opacity: 0.95;
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
   .animate-accordion-down {
     animation: accordion-down 0.2s ease-out;
   }
@@ -286,5 +330,38 @@
 
   .animate-spotlight {
     animation: spotlight 2s ease forwards;
+  }
+
+  .scanlines::before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.15) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .scanlines::after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(18, 16, 16, 0.05);
+    opacity: 0;
+    z-index: 2;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
   }
 }

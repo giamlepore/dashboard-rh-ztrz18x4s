@@ -29,6 +29,8 @@ export default {
       fontFamily: {
         sans: ['Inter var', 'SF Pro Display', 'system-ui', 'sans-serif'],
         display: ['SF Pro Display', 'Inter var', 'system-ui', 'sans-serif'],
+        serif: ['EB Garamond', 'serif'],
+        mono: ['VT323', 'monospace'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -81,6 +83,23 @@ export default {
           4: 'hsl(var(--chart-4))',
           5: 'hsl(var(--chart-5))',
         },
+        vintage: {
+          paper: 'hsl(var(--vintage-paper))',
+          text: 'hsl(var(--vintage-text))',
+        },
+        chassis: {
+          base: 'hsl(var(--chassis-base))',
+          border: 'hsl(var(--chassis-border))',
+          shadow: 'hsl(var(--chassis-shadow))',
+        },
+        rainbow: {
+          red: 'hsl(var(--rainbow-red))',
+          orange: 'hsl(var(--rainbow-orange))',
+          yellow: 'hsl(var(--rainbow-yellow))',
+          green: 'hsl(var(--rainbow-green))',
+          blue: 'hsl(var(--rainbow-blue))',
+          purple: 'hsl(var(--rainbow-purple))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -95,6 +114,9 @@ export default {
         subtle:
           '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)',
         elevation: '0 4px 20px rgba(0, 0, 0, 0.05)',
+        'chassis-sm': '2px 2px 0px 0px hsl(var(--chassis-shadow))',
+        'chassis-md': '4px 4px 0px 0px hsl(var(--chassis-shadow))',
+        'chassis-lg': '6px 6px 0px 0px hsl(var(--chassis-shadow))',
       },
       transitionTimingFunction: {
         apple: 'cubic-bezier(0.42, 0, 0.58, 1)',
