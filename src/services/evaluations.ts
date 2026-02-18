@@ -10,7 +10,11 @@ export interface Evaluation {
   nota_qualidade: number
   nota_trabalho_equipe: number
   observacoes: string | null
-  colaborador?: { nome: string }
+  colaborador?: {
+    nome: string
+    cargo: string | null
+    image_gender: string | null
+  }
   avaliador?: { nome: string }
   organization_id: string
 }
@@ -32,7 +36,7 @@ export const getEvaluations = async () => {
     .select(
       `
       *,
-      colaborador:colaboradores!fk_avaliacoes_colaborador(nome),
+      colaborador:colaboradores!fk_avaliacoes_colaborador(nome, cargo, image_gender),
       avaliador:colaboradores!fk_avaliacoes_avaliador(nome)
     `,
     )

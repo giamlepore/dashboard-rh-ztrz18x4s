@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Target,
+  Search,
+  Plus,
+  TrendingUp,
+  Award,
+  BarChart3,
+  Loader2,
+  ArrowRight,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -16,16 +19,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Target, Search, Plus, Trash2 } from 'lucide-react'
+import { EvaluationForm } from '@/components/forms/EvaluationForm'
+import { type EvaluationFormValues } from '@/components/forms/evaluation-schema'
 import { useUserRole } from '@/hooks/use-user-role'
 import { useToast } from '@/hooks/use-toast'
 import { getEmployees } from '@/services/employees'
@@ -35,9 +30,7 @@ import {
   deleteEvaluation,
   type Evaluation,
 } from '@/services/evaluations'
-import { EvaluationForm } from '@/components/forms/EvaluationForm'
-import { type EvaluationFormValues } from '@/components/forms/evaluation-schema'
-import { StarRating } from '@/components/ui/star-rating'
+import { EvaluationCard } from '@/components/EvaluationCard'
 
 export default function Avaliacoes() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([])
@@ -46,7 +39,8 @@ export default function Avaliacoes() {
   const [searchTerm, setSearchTerm] = useState('')
   const [loadingData, setLoadingData] = useState(false)
 
-  const { isEmployee, isAdmin, isManager, loading } = useUserRole()
+  const { isEmployee, isAdmin, isManager, loading, organizationId } =
+    useUserRole()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -68,8 +62,8 @@ export default function Avaliacoes() {
       const emps = await getEmployees()
       setEmployees(emps.map((e) => ({ id: e.id, nome: e.nome })))
 
-      // Admin fetches list
-      if (isAdmin) {
+      // Admin/Manager fetches list
+      if (isAdmin || isManager) {
         const data = await getEvaluations()
         setEvaluations(data)
       }
@@ -89,9 +83,18 @@ export default function Avaliacoes() {
     if (!loading && !isEmployee) {
       fetchData()
     }
-  }, [loading, isAdmin, isEmployee])
+  }, [loading, isAdmin, isManager, isEmployee])
 
   const handleSubmit = async (data: EvaluationFormValues) => {
+    if (!organizationId) {
+      toast({
+        title: 'Erro',
+        description: 'Organização não identificada.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     try {
       await createEvaluation({
         colaborador_id: data.colaboradorId,
@@ -101,6 +104,7 @@ export default function Avaliacoes() {
         nota_qualidade: data.notaQualidade,
         nota_trabalho_equipe: data.notaTrabalhoEquipe,
         observacoes: data.observacoes,
+        organization_id: organizationId,
       })
 
       toast({ title: 'Sucesso', description: 'Avaliação registrada.' })
@@ -137,151 +141,182 @@ export default function Avaliacoes() {
       e.periodo.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
+  // Stats Calculation
+  const totalEvaluations = evaluations.length
+  const avgScore =
+    totalEvaluations > 0
+      ? (
+          evaluations.reduce(
+            (acc, curr) =>
+              acc +
+              curr.nota_qualidade +
+              curr.nota_pontualidade +
+              curr.nota_trabalho_equipe,
+            0,
+          ) /
+          (totalEvaluations * 3)
+        ).toFixed(1)
+      : '0.0'
+
   if (loading || isEmployee) return null
 
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-fade-in-up">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Avaliações de Desempenho
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Gerencie e acompanhe o desempenho da equipe.
-          </p>
+    <div className="min-h-screen bg-cream font-sans text-ink pb-12">
+      {/* Navigation */}
+      <nav className="sticky top-0 left-0 w-full z-40 mix-blend-difference text-cream px-6 py-4 flex items-center justify-between pointer-events-none bg-cream/5 backdrop-blur-sm md:bg-transparent">
+        <div className="pointer-events-auto">
+          <span className="text-xl font-medium tracking-tight font-instrument">
+            Performance.
+          </span>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Nova Avaliação
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Registrar Avaliação</DialogTitle>
-            </DialogHeader>
-            <EvaluationForm
-              employees={employees}
-              onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      </nav>
 
-      {isAdmin && (
-        <Card className="border-none shadow-sm">
-          <CardHeader className="px-0 pt-0">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Histórico de Avaliações</CardTitle>
-              <div className="relative w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className="px-4 md:px-6 lg:px-8 pt-6 max-w-[1600px] mx-auto animate-fade-in">
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
+          {/* 1. Hero Card - Salmon */}
+          <div className="col-span-1 md:col-span-8 bg-salmon rounded-[24px] p-8 md:p-12 relative overflow-hidden min-h-[300px] flex flex-col justify-between group">
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+              <svg
+                className="w-[200%] h-full animate-drift"
+                viewBox="0 0 200 100"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0,20 Q50,80 100,20 T200,20"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+                <path
+                  d="M0,80 Q50,140 100,80 T200,80"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="0.5"
+                />
+              </svg>
+            </div>
+
+            <div className="relative z-10 space-y-4">
+              <h1 className="font-instrument text-5xl md:text-7xl leading-[0.9] tracking-tight text-ink max-w-2xl">
+                Performance & <br />
+                <span className="italic">Evolução</span>
+              </h1>
+              <p className="text-ink/80 text-lg max-w-md font-medium mt-4">
+                Monitore o desenvolvimento da equipe através de avaliações
+                contínuas e feedback estruturado.
+              </p>
+            </div>
+
+            <div className="relative z-10 flex gap-8 mt-8">
+              <div>
+                <span className="block font-instrument text-4xl md:text-5xl">
+                  {totalEvaluations}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  Avaliações Totais
+                </span>
+              </div>
+              <div>
+                <span className="block font-instrument text-4xl md:text-5xl">
+                  {avgScore}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  Média Geral
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Actions & Filters - Periwinkle & Ink */}
+          <div className="col-span-1 md:col-span-4 flex flex-col gap-4">
+            {/* New Evaluation Card */}
+            <div className="bg-ink text-cream rounded-[24px] p-8 flex flex-col justify-between flex-1 group relative overflow-hidden">
+              <div className="relative z-10">
+                <h2 className="font-instrument text-3xl mb-2">
+                  Nova Avaliação
+                </h2>
+                <p className="text-cream/60 text-sm">
+                  Registre um novo ciclo de feedback para um colaborador.
+                </p>
+              </div>
+
+              <div className="relative z-10 mt-6">
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full h-12 rounded-full bg-cream text-ink hover:bg-salmon hover:text-ink font-medium text-base transition-all">
+                      <Plus className="mr-2 h-5 w-5" /> Iniciar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="font-instrument text-3xl">
+                        Registrar Avaliação
+                      </DialogTitle>
+                    </DialogHeader>
+                    <EvaluationForm
+                      employees={employees}
+                      onSubmit={handleSubmit}
+                      onCancel={() => setIsDialogOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
+            </div>
+
+            {/* Search Card */}
+            <div className="bg-periwinkle rounded-[24px] p-6 h-32 flex flex-col justify-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-ink/40" />
                 <Input
-                  placeholder="Filtrar por nome ou período..."
-                  className="pl-8"
+                  placeholder="Buscar por colaborador..."
+                  className="pl-10 bg-white/50 border-ink/5 h-10 rounded-xl focus:ring-ink/20 placeholder:text-ink/40"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+              <div className="flex justify-end">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-ink/40">
+                  {filteredEvaluations.length} Resultados
+                </span>
+              </div>
             </div>
-            <CardDescription>
-              Lista completa de todas as avaliações registradas.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-0">
-            <div className="rounded-md border bg-card">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Colaborador</TableHead>
-                    <TableHead>Avaliador</TableHead>
-                    <TableHead>Período</TableHead>
-                    <TableHead className="text-center">Pontualidade</TableHead>
-                    <TableHead className="text-center">Qualidade</TableHead>
-                    <TableHead className="text-center">Equipe</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEvaluations.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="text-center h-24 text-muted-foreground"
-                      >
-                        {loadingData
-                          ? 'Carregando...'
-                          : 'Nenhuma avaliação encontrada.'}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredEvaluations.map((evaluation) => (
-                      <TableRow key={evaluation.id}>
-                        <TableCell className="font-medium">
-                          {evaluation.colaborador?.nome || 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          {evaluation.avaliador?.nome || 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{evaluation.periodo}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-center">
-                            <StarRating
-                              value={evaluation.nota_pontualidade}
-                              readOnly
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-center">
-                            <StarRating
-                              value={evaluation.nota_qualidade}
-                              readOnly
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-center">
-                            <StarRating
-                              value={evaluation.nota_trabalho_equipe}
-                              readOnly
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-500 hover:text-red-600"
-                            onClick={() => handleDelete(evaluation.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {!isAdmin && isManager && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg bg-muted/10">
-          <div className="p-4 bg-background rounded-full mb-4 shadow-sm">
-            <Target className="h-8 w-8 text-primary" />
           </div>
-          <h3 className="text-lg font-semibold">Área do Gerente</h3>
-          <p className="text-muted-foreground max-w-sm mt-2">
-            Utilize o botão "Nova Avaliação" acima para registrar o desempenho
-            dos membros da sua equipe.
-          </p>
+
+          {/* 3. Evaluations Grid */}
+          <div className="col-span-1 md:col-span-12 mt-4">
+            {loadingData ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-10 w-10 animate-spin text-salmon" />
+              </div>
+            ) : filteredEvaluations.length === 0 ? (
+              <div className="text-center py-24 bg-ink/5 rounded-[24px] border border-dashed border-ink/20">
+                <Target className="h-12 w-12 text-ink/20 mx-auto mb-4" />
+                <p className="font-instrument text-3xl text-ink/40 italic">
+                  Nenhuma avaliação encontrada.
+                </p>
+                <p className="text-ink/30 mt-2">
+                  Comece adicionando uma nova avaliação.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {filteredEvaluations.map((evaluation) => (
+                  <div key={evaluation.id} className="h-full">
+                    <EvaluationCard
+                      evaluation={evaluation}
+                      onDelete={handleDelete}
+                      isAdmin={isAdmin}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
