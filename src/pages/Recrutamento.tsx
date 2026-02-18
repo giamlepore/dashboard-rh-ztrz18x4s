@@ -7,6 +7,7 @@ import {
   Plus,
   ArrowRight,
   Loader2,
+  Search,
 } from 'lucide-react'
 import { useUserRole } from '@/hooks/use-user-role'
 import { useToast } from '@/hooks/use-toast'
