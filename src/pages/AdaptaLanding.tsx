@@ -48,7 +48,7 @@ export default function AdaptaLanding() {
   ]
 
   return (
-    <div className="min-h-screen bg-vintage-paper font-sans text-vintage-text overflow-x-hidden scanlines selection:bg-rainbow-yellow selection:text-vintage-text">
+    <div className="min-h-screen bg-vintage-paper font-sans text-vintage-text overflow-x-hidden selection:bg-rainbow-yellow selection:text-vintage-text">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-vintage-paper/95 backdrop-blur border-b border-vintage-text/10 supports-[backdrop-filter]:bg-vintage-paper/60">
         <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
@@ -90,7 +90,7 @@ export default function AdaptaLanding() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-24 lg:py-32 px-4 md:px-6 overflow-hidden">
+      <section className="relative py-24 lg:py-32 px-4 md:px-6 overflow-hidden bg-vintage-paper">
         <div className="container mx-auto max-w-5xl space-y-8 relative z-10 animate-fade-in-down">
           <div className="flex justify-center">
             <Badge
@@ -134,15 +134,6 @@ export default function AdaptaLanding() {
                 </Button>
               </Link>
             )}
-          </div>
-
-          <div className="h-1 w-full max-w-xs mx-auto mt-12 flex">
-            <div className="h-full w-1/6 bg-rainbow-red"></div>
-            <div className="h-full w-1/6 bg-rainbow-orange"></div>
-            <div className="h-full w-1/6 bg-rainbow-yellow"></div>
-            <div className="h-full w-1/6 bg-rainbow-green"></div>
-            <div className="h-full w-1/6 bg-rainbow-blue"></div>
-            <div className="h-full w-1/6 bg-rainbow-purple"></div>
           </div>
         </div>
       </section>
