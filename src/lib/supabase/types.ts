@@ -204,16 +204,19 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          created_by: string | null
           id: string
           nome: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           id?: string
           nome: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           id?: string
           nome?: string
         }
