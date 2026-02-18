@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Target,
-  Search,
-  Plus,
-  TrendingUp,
-  Award,
-  BarChart3,
-  Loader2,
-  ArrowRight,
-} from 'lucide-react'
+import { Target, Search, Plus, Loader2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -19,6 +10,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { EvaluationForm } from '@/components/forms/EvaluationForm'
 import { type EvaluationFormValues } from '@/components/forms/evaluation-schema'
 import { useUserRole } from '@/hooks/use-user-role'
@@ -31,6 +31,8 @@ import {
   type Evaluation,
 } from '@/services/evaluations'
 import { EvaluationCard } from '@/components/EvaluationCard'
+import { ViewSwitcher } from '@/components/ViewSwitcher'
+import { cn } from '@/lib/utils'
 
 export default function Avaliacoes() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([])
@@ -38,6 +40,7 @@ export default function Avaliacoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [loadingData, setLoadingData] = useState(false)
+  const [view, setView] = useState<'cards' | 'table'>('cards')
 
   const { isEmployee, isAdmin, isManager, loading, organizationId } =
     useUserRole()
@@ -159,6 +162,13 @@ export default function Avaliacoes() {
       : '0.0'
 
   if (loading || isEmployee) return null
+
+  const getScoreColor = (score: number) => {
+    if (score >= 4.5) return 'text-emerald-600 bg-emerald-50 border-emerald-200'
+    if (score >= 3.5) return 'text-blue-600 bg-blue-50 border-blue-200'
+    if (score >= 2.5) return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+    return 'text-red-600 bg-red-50 border-red-200'
+  }
 
   return (
     <div className="min-h-screen bg-cream font-sans text-ink pb-12">
@@ -285,8 +295,13 @@ export default function Avaliacoes() {
             </div>
           </div>
 
-          {/* 3. Evaluations Grid */}
-          <div className="col-span-1 md:col-span-12 mt-4">
+          {/* View Switcher */}
+          <div className="col-span-1 md:col-span-12 flex justify-end">
+            <ViewSwitcher view={view} setView={setView} />
+          </div>
+
+          {/* 3. Evaluations Grid/Table */}
+          <div className="col-span-1 md:col-span-12">
             {loadingData ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-10 w-10 animate-spin text-salmon" />
@@ -301,7 +316,7 @@ export default function Avaliacoes() {
                   Comece adicionando uma nova avaliação.
                 </p>
               </div>
-            ) : (
+            ) : view === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {filteredEvaluations.map((evaluation) => (
                   <div key={evaluation.id} className="h-full">
@@ -312,6 +327,115 @@ export default function Avaliacoes() {
                     />
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="rounded-[24px] border border-ink/5 bg-white/50 backdrop-blur-sm overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-ink/5">
+                    <TableRow className="hover:bg-transparent border-ink/5">
+                      <TableHead className="text-ink font-medium">
+                        Colaborador
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Avaliador
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Período
+                      </TableHead>
+                      <TableHead className="text-center text-ink font-medium">
+                        Pontualidade
+                      </TableHead>
+                      <TableHead className="text-center text-ink font-medium">
+                        Qualidade
+                      </TableHead>
+                      <TableHead className="text-center text-ink font-medium">
+                        Equipe
+                      </TableHead>
+                      {isAdmin && (
+                        <TableHead className="text-right text-ink font-medium">
+                          Ações
+                        </TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEvaluations.map((evaluation) => (
+                      <TableRow
+                        key={evaluation.id}
+                        className="border-ink/5 hover:bg-white/60"
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 border border-white shadow-sm">
+                              <AvatarImage
+                                src={`https://img.usecurling.com/ppl/thumbnail?gender=${evaluation.colaborador?.image_gender || 'male'}&seed=${evaluation.colaborador_id}`}
+                              />
+                              <AvatarFallback>
+                                {evaluation.colaborador?.nome.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <span className="font-medium text-ink block">
+                                {evaluation.colaborador?.nome}
+                              </span>
+                              <span className="text-xs text-ink/50">
+                                {evaluation.colaborador?.cargo}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {evaluation.avaliador?.nome}
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {evaluation.periodo}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div
+                            className={cn(
+                              'inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border',
+                              getScoreColor(evaluation.nota_pontualidade),
+                            )}
+                          >
+                            {evaluation.nota_pontualidade}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div
+                            className={cn(
+                              'inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border',
+                              getScoreColor(evaluation.nota_qualidade),
+                            )}
+                          >
+                            {evaluation.nota_qualidade}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div
+                            className={cn(
+                              'inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border',
+                              getScoreColor(evaluation.nota_trabalho_equipe),
+                            )}
+                          >
+                            {evaluation.nota_trabalho_equipe}
+                          </div>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                              onClick={() => handleDelete(evaluation.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </div>

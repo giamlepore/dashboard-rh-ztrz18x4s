@@ -1,5 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, Plus, Search, Users, Loader2, Inbox } from 'lucide-react'
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  Users,
+  Loader2,
+  Inbox,
+  MoreVertical,
+  Pencil,
+  Download,
+  FileText,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -9,6 +20,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   CandidateForm,
   CandidateFormValues,
@@ -25,6 +53,8 @@ import {
 import { getJobs, Job } from '@/services/jobs'
 import { useNavigate } from 'react-router-dom'
 import { CandidateCard } from '@/components/CandidateCard'
+import { ViewSwitcher } from '@/components/ViewSwitcher'
+import { cn } from '@/lib/utils'
 
 export default function Candidatos() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
@@ -36,6 +66,7 @@ export default function Candidatos() {
     null,
   )
   const [loading, setLoading] = useState(true)
+  const [view, setView] = useState<'cards' | 'table'>('cards')
 
   // Upload/Download states
   const [uploadingId, setUploadingId] = useState<string | null>(null)
@@ -211,6 +242,21 @@ export default function Candidatos() {
     }
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Aprovado':
+      case 'Contratado':
+        return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200'
+      case 'Reprovado':
+      case 'Recusado':
+        return 'bg-red-100 text-red-800 hover:bg-red-200 border-red-200'
+      case 'Entrevista':
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200'
+      default:
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200'
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cream font-sans text-ink pb-12">
       <input
@@ -345,8 +391,13 @@ export default function Candidatos() {
             </div>
           </div>
 
+          {/* View Switcher */}
+          <div className="col-span-1 md:col-span-12 flex justify-end">
+            <ViewSwitcher view={view} setView={setView} />
+          </div>
+
           {/* Grid of Candidates */}
-          <div className="col-span-1 md:col-span-12 mt-4">
+          <div className="col-span-1 md:col-span-12">
             {loading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-10 w-10 animate-spin text-salmon" />
@@ -358,7 +409,7 @@ export default function Candidatos() {
                   Nenhum candidato encontrado.
                 </p>
               </div>
-            ) : (
+            ) : view === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {filteredCandidates.map((candidate) => (
                   <CandidateCard
@@ -375,6 +426,168 @@ export default function Candidatos() {
                     downloadingId={downloadingId}
                   />
                 ))}
+              </div>
+            ) : (
+              <div className="rounded-[24px] border border-ink/5 bg-white/50 backdrop-blur-sm overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-ink/5">
+                    <TableRow className="hover:bg-transparent border-ink/5">
+                      <TableHead className="text-ink font-medium">
+                        Candidato
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Vaga
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        E-mail
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Status
+                      </TableHead>
+                      <TableHead className="text-right text-ink font-medium">
+                        Ações
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCandidates.map((candidate) => (
+                      <TableRow
+                        key={candidate.id}
+                        className="border-ink/5 hover:bg-white/60"
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 border border-white shadow-sm">
+                              <AvatarImage
+                                src={`https://img.usecurling.com/ppl/thumbnail?gender=${candidate.image_gender}&seed=${candidate.id}`}
+                              />
+                              <AvatarFallback>
+                                {candidate.nome_candidato.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-ink">
+                              {candidate.nome_candidato}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {candidate.vagas?.titulo || candidate.vaga}
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {candidate.email || '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'font-normal border',
+                              getStatusColor(candidate.status),
+                            )}
+                          >
+                            {candidate.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                'h-8 px-2 text-xs',
+                                candidate.curriculo_url
+                                  ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                                  : 'text-muted-foreground',
+                              )}
+                              onClick={() => handleCVClick(candidate.id)}
+                              disabled={uploadingId === candidate.id}
+                            >
+                              {uploadingId === candidate.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : (
+                                <FileText className="h-3 w-3 mr-1" />
+                              )}
+                              {candidate.curriculo_url ? 'CV' : 'Add CV'}
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 hover:bg-ink/5"
+                                >
+                                  <MoreVertical className="h-4 w-4 text-ink/50" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setEditingCandidate(candidate)
+                                    setIsDialogOpen(true)
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4 mr-2" /> Editar
+                                </DropdownMenuItem>
+                                {candidate.curriculo_url && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleDownloadCV(candidate)
+                                      }
+                                      disabled={downloadingId === candidate.id}
+                                    >
+                                      {downloadingId === candidate.id ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      ) : (
+                                        <Download className="h-4 w-4 mr-2" />
+                                      )}
+                                      Baixar CV
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleStatusChange(candidate.id, 'Triagem')
+                                  }
+                                >
+                                  Mover para Triagem
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleStatusChange(
+                                      candidate.id,
+                                      'Entrevista',
+                                    )
+                                  }
+                                >
+                                  Mover para Entrevista
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleStatusChange(candidate.id, 'Aprovado')
+                                  }
+                                >
+                                  Marcar Aprovado
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleStatusChange(
+                                      candidate.id,
+                                      'Reprovado',
+                                    )
+                                  }
+                                >
+                                  Marcar Reprovado
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </div>

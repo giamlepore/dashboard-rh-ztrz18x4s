@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, Users, Building2, UserPlus, Loader2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Search,
+  Users,
+  UserPlus,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Dialog,
   DialogContent,
@@ -20,6 +30,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from '@/components/ui/dropdown-menu'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { EmployeeForm } from '@/components/forms/EmployeeForm'
 import { type EmployeeFormValues } from '@/components/forms/employee-schema'
 import { useToast } from '@/hooks/use-toast'
@@ -34,6 +62,8 @@ import {
 import { useUserRole } from '@/hooks/use-user-role'
 import { useAuth } from '@/hooks/use-auth'
 import { EmployeeCard } from '@/components/EmployeeCard'
+import { ViewSwitcher } from '@/components/ViewSwitcher'
+import { cn } from '@/lib/utils'
 
 export default function Colaboradores() {
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -43,11 +73,11 @@ export default function Colaboradores() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
+  const [view, setView] = useState<'cards' | 'table'>('cards')
 
   const { toast } = useToast()
   const { role, isEmployee, isAdmin, isManager } = useUserRole()
   const { user } = useAuth()
-  const navigate = useNavigate()
 
   const fetchEmployees = async () => {
     try {
@@ -80,7 +110,6 @@ export default function Colaboradores() {
   const handleSubmit = async (data: EmployeeFormValues, files: File[]) => {
     setIsLoading(true)
     try {
-      // Note: File upload simplified for this context, assume handled if needed or keep existing logic
       const empData = {
         nome: data.name,
         cpf: data.cpf,
@@ -307,8 +336,13 @@ export default function Colaboradores() {
             </div>
           </div>
 
-          {/* Employee Grid */}
-          <div className="col-span-1 md:col-span-12 mt-4">
+          {/* View Switcher */}
+          <div className="col-span-1 md:col-span-12 flex justify-end">
+            <ViewSwitcher view={view} setView={setView} />
+          </div>
+
+          {/* Employee Grid/Table */}
+          <div className="col-span-1 md:col-span-12">
             {dataLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-10 w-10 animate-spin text-salmon" />
@@ -319,7 +353,7 @@ export default function Colaboradores() {
                   Nenhum colaborador encontrado.
                 </p>
               </div>
-            ) : (
+            ) : view === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {filteredEmployees.map((emp) => (
                   <EmployeeCard
@@ -335,6 +369,136 @@ export default function Colaboradores() {
                     isAdmin={isAdmin}
                   />
                 ))}
+              </div>
+            ) : (
+              <div className="rounded-[24px] border border-ink/5 bg-white/50 backdrop-blur-sm overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-ink/5">
+                    <TableRow className="hover:bg-transparent border-ink/5">
+                      <TableHead className="text-ink font-medium">
+                        Nome
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Cargo
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Departamento
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Status
+                      </TableHead>
+                      {canEdit && (
+                        <TableHead className="text-right text-ink font-medium">
+                          Ações
+                        </TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEmployees.map((emp) => (
+                      <TableRow
+                        key={emp.id}
+                        className="border-ink/5 hover:bg-white/60"
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 border border-white shadow-sm">
+                              <AvatarImage
+                                src={`https://img.usecurling.com/ppl/thumbnail?gender=${emp.image_gender || 'male'}&seed=${emp.id}`}
+                              />
+                              <AvatarFallback className="bg-periwinkle text-ink text-xs">
+                                {emp.nome.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-ink">
+                              {emp.nome}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {emp.cargo}
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {emp.departamento}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'font-normal',
+                              emp.status === 'Ativo' &&
+                                'bg-sage/20 text-ink border-sage/50',
+                              emp.status === 'Férias' &&
+                                'bg-periwinkle/20 text-ink border-periwinkle/50',
+                              emp.status === 'Desligado' &&
+                                'bg-salmon/20 text-ink border-salmon/50',
+                            )}
+                          >
+                            {emp.status}
+                          </Badge>
+                        </TableCell>
+                        {canEdit && (
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 hover:bg-ink/5"
+                                >
+                                  <MoreHorizontal className="h-4 w-4 text-ink/50" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setEditingEmployee(emp)
+                                    setIsDialogOpen(true)
+                                  }}
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" /> Editar
+                                </DropdownMenuItem>
+                                {isAdmin && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuLabel>
+                                      Acesso
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuRadioGroup
+                                      value={emp.role}
+                                      onValueChange={(value) =>
+                                        handleRoleUpdate(emp.id, value)
+                                      }
+                                    >
+                                      <DropdownMenuRadioItem value="Colaborador">
+                                        Colaborador
+                                      </DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="Gerente">
+                                        Gerente
+                                      </DropdownMenuRadioItem>
+                                      <DropdownMenuRadioItem value="Admin">
+                                        Admin
+                                      </DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                  </>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => setDeletingId(emp.id)}
+                                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </div>
