@@ -5,41 +5,22 @@ import { ManagerVacationView } from '@/components/vacations/ManagerVacationView'
 export default function Ferias() {
   const { isEmployee, isAdmin, isManager, loading } = useUserRole()
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  if (loading) return null
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Gestão de Férias
-          </h1>
-          <p className="text-muted-foreground">
-            {isEmployee
-              ? 'Solicite e acompanhe suas férias.'
-              : 'Gerencie solicitações de férias da equipe.'}
-          </p>
+    <div className="min-h-screen bg-cream font-sans text-ink pb-12">
+      <nav className="sticky top-0 left-0 w-full z-40 mix-blend-difference text-cream px-6 py-4 flex items-center justify-between pointer-events-none bg-cream/5 backdrop-blur-sm md:bg-transparent">
+        <div className="pointer-events-auto">
+          <span className="text-xl font-medium tracking-tight font-instrument">
+            Férias & Ausências.
+          </span>
         </div>
+      </nav>
+
+      <div className="px-4 md:px-6 lg:px-8 pt-6 max-w-[1600px] mx-auto animate-fade-in">
+        {isEmployee && <CollaboratorVacationView />}
+        {(isAdmin || isManager) && <ManagerVacationView />}
       </div>
-
-      {isEmployee && <CollaboratorVacationView />}
-
-      {(isAdmin || isManager) && <ManagerVacationView />}
-
-      {!isEmployee && !isAdmin && !isManager && (
-        <div className="text-center p-12 border rounded-lg bg-muted/10">
-          <h3 className="text-lg font-medium">Acesso Restrito</h3>
-          <p className="text-muted-foreground mt-2">
-            Você não tem permissão para visualizar esta página.
-          </p>
-        </div>
-      )}
     </div>
   )
 }
