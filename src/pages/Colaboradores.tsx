@@ -22,6 +22,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
@@ -33,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Plus, Pencil, Trash2, Search, Columns } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Columns, Shield } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { EmployeeForm } from '@/components/forms/EmployeeForm'
@@ -81,7 +83,7 @@ export default function Colaboradores() {
     contractType: false,
   })
   const { toast } = useToast()
-  const { role, isEmployee } = useUserRole()
+  const { role, isEmployee, isAdmin } = useUserRole()
   const { user } = useAuth()
 
   const fetchEmployees = async () => {
@@ -218,6 +220,24 @@ export default function Colaboradores() {
         })
       }
       setDeletingId(null)
+    }
+  }
+
+  const handleRoleUpdate = async (employeeId: string, newRole: string) => {
+    try {
+      await updateEmployee(employeeId, { role: newRole as Employee['role'] })
+      toast({
+        title: 'Permissão atualizada',
+        description: `O acesso foi alterado para ${newRole}.`,
+      })
+      await fetchEmployees()
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro ao atualizar',
+        description: 'Não foi possível alterar a permissão.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -494,6 +514,46 @@ export default function Colaboradores() {
                   </TableCell>
                   {canEdit && (
                     <TableCell className="text-right whitespace-nowrap">
+                      {isAdmin && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Alterar Permissões"
+                              className="mr-1"
+                            >
+                              <Shield className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>
+                              Nível de Acesso
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuRadioGroup
+                              value={employee.role}
+                              onValueChange={(value) =>
+                                handleRoleUpdate(employee.id, value)
+                              }
+                            >
+                              <DropdownMenuRadioItem value="Admin">
+                                Admin
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Gerente">
+                                Gerente
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="Colaborador">
+                                Colaborador
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="visitante">
+                                Visitante
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+
                       <Button
                         variant="ghost"
                         size="icon"
