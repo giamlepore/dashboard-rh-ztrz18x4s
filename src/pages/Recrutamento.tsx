@@ -100,7 +100,7 @@ export default function Recrutamento() {
       <div className="px-4 md:px-6 lg:px-8 pt-6 md:pt-10 max-w-[1600px] mx-auto animate-fade-in">
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
-          {/* Quick Actions - Ink (Moved to top) */}
+          {/* Quick Actions - Ink (Remains at top) */}
           <div className="col-span-1 md:col-span-12 bg-ink text-cream rounded-[24px] p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
             <div className="relative z-10 max-w-xl">
               <h2 className="font-instrument text-4xl md:text-5xl mb-4">
@@ -152,7 +152,127 @@ export default function Recrutamento() {
             </div>
           </div>
 
-          {/* 1. Hero Card - Salmon */}
+          {/* Jobs List - Periwinkle (Moved to top position) */}
+          <div
+            className="col-span-1 md:col-span-6 bg-periwinkle rounded-[24px] p-8 md:p-10 min-h-[400px] flex flex-col relative overflow-hidden group cursor-pointer transition-all hover:brightness-95"
+            onClick={() => navigate('/recrutamento/vagas')}
+          >
+            <div className="flex justify-between items-start mb-6 relative z-10">
+              <h2 className="font-instrument text-4xl">Vagas em Aberto</h2>
+              <div className="bg-ink text-periwinkle p-2 rounded-full transform group-hover:rotate-45 transition-transform duration-300">
+                <ArrowUpRight className="w-6 h-6" />
+              </div>
+            </div>
+
+            <div className="relative z-10 flex-1 flex flex-col gap-3">
+              {loadingData ? (
+                <div className="space-y-3">
+                  <div className="h-16 bg-ink/5 rounded-xl animate-pulse" />
+                  <div className="h-16 bg-ink/5 rounded-xl animate-pulse" />
+                  <div className="h-16 bg-ink/5 rounded-xl animate-pulse" />
+                </div>
+              ) : activeJobs.length > 0 ? (
+                activeJobs.slice(0, 3).map((job) => (
+                  <div
+                    key={job.id}
+                    className="bg-white/40 backdrop-blur-sm p-4 rounded-xl border border-white/20 hover:bg-white/60 transition-colors flex justify-between items-center group/item"
+                  >
+                    <div>
+                      <h3 className="font-semibold text-lg leading-tight">
+                        {job.titulo}
+                      </h3>
+                      <p className="text-sm opacity-70 font-medium">
+                        {job.departamento} • {job.tipo_contrato}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all" />
+                  </div>
+                ))
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-ink/50 font-medium italic">
+                  Nenhuma vaga aberta no momento.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 relative z-10">
+              <span className="text-sm font-bold uppercase tracking-widest border-b border-ink pb-0.5 group-hover:border-transparent transition-colors">
+                Gerenciar todas as vagas
+              </span>
+            </div>
+
+            {/* Decorative Element */}
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
+          </div>
+
+          {/* Candidates Pipeline - Sage (Moved to top position) */}
+          <div
+            className="col-span-1 md:col-span-6 bg-sage rounded-[24px] p-8 md:p-10 min-h-[400px] flex flex-col relative overflow-hidden group cursor-pointer transition-all hover:brightness-95"
+            onClick={() => navigate('/recrutamento/candidatos')}
+          >
+            <div className="flex justify-between items-start mb-6 relative z-10">
+              <h2 className="font-instrument text-4xl">
+                Pipeline de Candidatos
+              </h2>
+              <div className="bg-ink text-sage p-2 rounded-full transform group-hover:rotate-45 transition-transform duration-300">
+                <ArrowUpRight className="w-6 h-6" />
+              </div>
+            </div>
+
+            <div className="relative z-10 grid grid-cols-2 gap-4">
+              <div className="bg-ink/5 p-4 rounded-2xl flex flex-col justify-between h-32 hover:bg-ink/10 transition-colors">
+                <Users className="w-6 h-6 opacity-50" />
+                <div>
+                  <span className="block text-3xl font-instrument">
+                    {triagemCandidates}
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wide opacity-70">
+                    Em Triagem
+                  </span>
+                </div>
+              </div>
+              <div className="bg-ink/5 p-4 rounded-2xl flex flex-col justify-between h-32 hover:bg-ink/10 transition-colors">
+                <Briefcase className="w-6 h-6 opacity-50" />
+                <div>
+                  <span className="block text-3xl font-instrument">
+                    {interviewCandidates}
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wide opacity-70">
+                    Em Entrevista
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative z-10 mt-6 text-ink/80 max-w-sm">
+              <p className="text-sm font-medium leading-relaxed">
+                Acompanhe o progresso dos candidatos, agende entrevistas e
+                gerencie documentação em um fluxo contínuo.
+              </p>
+            </div>
+
+            {/* Interactive SVG Hover Effects */}
+            <div className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-30 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none">
+              <svg width="250" height="250" viewBox="0 0 300 300">
+                <path
+                  d="M0,150 Q75,50 150,150 T300,150"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="0.8"
+                  className="animate-[pulse_4s_ease-in-out_infinite]"
+                />
+                <path
+                  d="M0,150 Q75,250 150,150 T300,150"
+                  fill="none"
+                  stroke="#1A1A18"
+                  strokeWidth="0.8"
+                  className="animate-[pulse_4s_ease-in-out_infinite_1s]"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Hero Card - Salmon (Moved to bottom) */}
           <div className="col-span-1 md:col-span-8 bg-salmon rounded-[24px] p-8 md:p-12 relative overflow-hidden min-h-[400px] flex flex-col justify-between group transition-all duration-500 hover:shadow-elevation">
             {/* Drifting Background Lines */}
             <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -234,7 +354,7 @@ export default function Recrutamento() {
             </div>
           </div>
 
-          {/* 2. Visual Blob Card - Cream */}
+          {/* Visual Blob Card - Cream (Moved to bottom) */}
           <div className="col-span-1 md:col-span-4 bg-cream border border-ink/10 rounded-[24px] relative overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center justify-center group transition-all duration-500 hover:shadow-subtle">
             <div className="absolute inset-0 bg-ink/5" />
             <div className="relative w-full h-full flex items-center justify-center animate-float">
@@ -272,126 +392,6 @@ export default function Recrutamento() {
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 Recruiting Now
               </span>
-            </div>
-          </div>
-
-          {/* 3. Jobs List - Periwinkle */}
-          <div
-            className="col-span-1 md:col-span-6 bg-periwinkle rounded-[24px] p-8 md:p-10 min-h-[400px] flex flex-col relative overflow-hidden group cursor-pointer transition-all hover:brightness-95"
-            onClick={() => navigate('/recrutamento/vagas')}
-          >
-            <div className="flex justify-between items-start mb-6 relative z-10">
-              <h2 className="font-instrument text-4xl">Vagas em Aberto</h2>
-              <div className="bg-ink text-periwinkle p-2 rounded-full transform group-hover:rotate-45 transition-transform duration-300">
-                <ArrowUpRight className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="relative z-10 flex-1 flex flex-col gap-3">
-              {loadingData ? (
-                <div className="space-y-3">
-                  <div className="h-16 bg-ink/5 rounded-xl animate-pulse" />
-                  <div className="h-16 bg-ink/5 rounded-xl animate-pulse" />
-                  <div className="h-16 bg-ink/5 rounded-xl animate-pulse" />
-                </div>
-              ) : activeJobs.length > 0 ? (
-                activeJobs.slice(0, 3).map((job) => (
-                  <div
-                    key={job.id}
-                    className="bg-white/40 backdrop-blur-sm p-4 rounded-xl border border-white/20 hover:bg-white/60 transition-colors flex justify-between items-center group/item"
-                  >
-                    <div>
-                      <h3 className="font-semibold text-lg leading-tight">
-                        {job.titulo}
-                      </h3>
-                      <p className="text-sm opacity-70 font-medium">
-                        {job.departamento} • {job.tipo_contrato}
-                      </p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all" />
-                  </div>
-                ))
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-ink/50 font-medium italic">
-                  Nenhuma vaga aberta no momento.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 relative z-10">
-              <span className="text-sm font-bold uppercase tracking-widest border-b border-ink pb-0.5 group-hover:border-transparent transition-colors">
-                Gerenciar todas as vagas
-              </span>
-            </div>
-
-            {/* Decorative Element */}
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
-          </div>
-
-          {/* 4. Candidates Pipeline - Sage */}
-          <div
-            className="col-span-1 md:col-span-6 bg-sage rounded-[24px] p-8 md:p-10 min-h-[400px] flex flex-col relative overflow-hidden group cursor-pointer transition-all hover:brightness-95"
-            onClick={() => navigate('/recrutamento/candidatos')}
-          >
-            <div className="flex justify-between items-start mb-6 relative z-10">
-              <h2 className="font-instrument text-4xl">
-                Pipeline de Candidatos
-              </h2>
-              <div className="bg-ink text-sage p-2 rounded-full transform group-hover:rotate-45 transition-transform duration-300">
-                <ArrowUpRight className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="relative z-10 grid grid-cols-2 gap-4">
-              <div className="bg-ink/5 p-4 rounded-2xl flex flex-col justify-between h-32 hover:bg-ink/10 transition-colors">
-                <Users className="w-6 h-6 opacity-50" />
-                <div>
-                  <span className="block text-3xl font-instrument">
-                    {triagemCandidates}
-                  </span>
-                  <span className="text-xs font-bold uppercase tracking-wide opacity-70">
-                    Em Triagem
-                  </span>
-                </div>
-              </div>
-              <div className="bg-ink/5 p-4 rounded-2xl flex flex-col justify-between h-32 hover:bg-ink/10 transition-colors">
-                <Briefcase className="w-6 h-6 opacity-50" />
-                <div>
-                  <span className="block text-3xl font-instrument">
-                    {interviewCandidates}
-                  </span>
-                  <span className="text-xs font-bold uppercase tracking-wide opacity-70">
-                    Em Entrevista
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative z-10 mt-6 text-ink/80 max-w-sm">
-              <p className="text-sm font-medium leading-relaxed">
-                Acompanhe o progresso dos candidatos, agende entrevistas e
-                gerencie documentação em um fluxo contínuo.
-              </p>
-            </div>
-
-            {/* Interactive SVG Hover Effects */}
-            <div className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-30 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none">
-              <svg width="250" height="250" viewBox="0 0 300 300">
-                <path
-                  d="M0,150 Q75,50 150,150 T300,150"
-                  fill="none"
-                  stroke="#1A1A18"
-                  strokeWidth="0.8"
-                  className="animate-[pulse_4s_ease-in-out_infinite]"
-                />
-                <path
-                  d="M0,150 Q75,250 150,150 T300,150"
-                  fill="none"
-                  stroke="#1A1A18"
-                  strokeWidth="0.8"
-                  className="animate-[pulse_4s_ease-in-out_infinite_1s]"
-                />
-              </svg>
             </div>
           </div>
         </div>
