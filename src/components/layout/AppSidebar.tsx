@@ -22,7 +22,6 @@ import {
   BarChart3,
   Search,
   Filter,
-  History,
   Building,
   Shield,
 } from 'lucide-react'
@@ -83,12 +82,6 @@ const menuGroups = [
       },
     ],
   },
-]
-
-const recentItems = [
-  { title: 'Aprovação de Ponto - Set/25', time: '2h atrás' },
-  { title: 'Review: Design Senior', time: '4h atrás' },
-  { title: 'Onboarding: Ana Silva', time: '1d atrás' },
 ]
 
 export function AppSidebar() {
@@ -157,26 +150,6 @@ export function AppSidebar() {
             </SidebarGroup>
           )
         })}
-
-        <SidebarGroup className="mt-auto group-data-[collapsible=icon]:hidden">
-          <SidebarGroupLabel>Recentes</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <ul className="flex flex-col gap-2">
-              {recentItems.map((item, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <History className="h-3 w-3 shrink-0" />
-                  <span className="truncate flex-1">{item.title}</span>
-                  <span className="text-[10px] opacity-70 whitespace-nowrap">
-                    {item.time}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden gap-4">
         {organizationId && (
