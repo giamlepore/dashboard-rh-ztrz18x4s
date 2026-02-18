@@ -41,7 +41,7 @@ export function EmployeeCard({
 }: EmployeeCardProps) {
   return (
     <div className="group relative bg-white/50 backdrop-blur-sm border border-ink/5 rounded-[24px] p-6 hover:shadow-elevation hover:bg-white/80 transition-all duration-300 hover:-translate-y-1">
-      <div className="flex items-start gap-4 mb-4">
+      <div className="flex items-start gap-3 mb-4 pr-8">
         <Avatar className="h-16 w-16 border-2 border-white shadow-sm">
           <AvatarImage
             src={`https://img.usecurling.com/ppl/medium?gender=${employee.image_gender || 'male'}&seed=${employee.id}`}
@@ -90,7 +90,7 @@ export function EmployeeCard({
       </div>
 
       {canEdit && (
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-4 right-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
   Briefcase,
@@ -13,7 +13,6 @@ import { useUserRole } from '@/hooks/use-user-role'
 import { useToast } from '@/hooks/use-toast'
 import { getJobs, Job } from '@/services/jobs'
 import { getCandidates, Candidate } from '@/services/recruitment'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 export default function Recrutamento() {
@@ -101,6 +100,58 @@ export default function Recrutamento() {
       <div className="px-4 md:px-6 lg:px-8 pt-6 md:pt-10 max-w-[1600px] mx-auto animate-fade-in">
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
+          {/* Quick Actions - Ink (Moved to top) */}
+          <div className="col-span-1 md:col-span-12 bg-ink text-cream rounded-[24px] p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
+            <div className="relative z-10 max-w-xl">
+              <h2 className="font-instrument text-4xl md:text-5xl mb-4">
+                Pronto para crescer?
+              </h2>
+              <p className="text-cream/60 text-lg">
+                Publique novas oportunidades ou adicione talentos manualmente ao
+                seu banco de dados.
+              </p>
+            </div>
+
+            <div className="relative z-10 flex flex-wrap gap-4 justify-center md:justify-end">
+              <Button
+                onClick={() => navigate('/recrutamento/vagas')}
+                className="bg-cream text-ink hover:bg-salmon hover:text-ink h-14 px-8 rounded-full font-medium text-base transition-all duration-300"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nova Vaga
+              </Button>
+              <Button
+                onClick={() => navigate('/recrutamento/candidatos')}
+                variant="outline"
+                className="border-cream text-cream hover:bg-cream hover:text-ink h-14 px-8 rounded-full font-medium text-base transition-all duration-300 bg-transparent"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Buscar Candidato
+              </Button>
+            </div>
+
+            {/* Background Texture */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <svg
+                width="100%"
+                height="100%"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <pattern
+                    id="grid-rec"
+                    width="40"
+                    height="40"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <circle cx="2" cy="2" r="1" fill="#F5F2EA" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid-rec)" />
+              </svg>
+            </div>
+          </div>
+
           {/* 1. Hero Card - Salmon */}
           <div className="col-span-1 md:col-span-8 bg-salmon rounded-[24px] p-8 md:p-12 relative overflow-hidden min-h-[400px] flex flex-col justify-between group transition-all duration-500 hover:shadow-elevation">
             {/* Drifting Background Lines */}
@@ -340,58 +391,6 @@ export default function Recrutamento() {
                   strokeWidth="0.8"
                   className="animate-[pulse_4s_ease-in-out_infinite_1s]"
                 />
-              </svg>
-            </div>
-          </div>
-
-          {/* 5. Quick Actions - Ink */}
-          <div className="col-span-1 md:col-span-12 bg-ink text-cream rounded-[24px] p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
-            <div className="relative z-10 max-w-xl">
-              <h2 className="font-instrument text-4xl md:text-5xl mb-4">
-                Pronto para crescer?
-              </h2>
-              <p className="text-cream/60 text-lg">
-                Publique novas oportunidades ou adicione talentos manualmente ao
-                seu banco de dados.
-              </p>
-            </div>
-
-            <div className="relative z-10 flex flex-wrap gap-4 justify-center md:justify-end">
-              <Button
-                onClick={() => navigate('/recrutamento/vagas')}
-                className="bg-cream text-ink hover:bg-salmon hover:text-ink h-14 px-8 rounded-full font-medium text-base transition-all duration-300"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Nova Vaga
-              </Button>
-              <Button
-                onClick={() => navigate('/recrutamento/candidatos')}
-                variant="outline"
-                className="border-cream text-cream hover:bg-cream hover:text-ink h-14 px-8 rounded-full font-medium text-base transition-all duration-300 bg-transparent"
-              >
-                <Search className="w-5 h-5 mr-2" />
-                Buscar Candidato
-              </Button>
-            </div>
-
-            {/* Background Texture */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <svg
-                width="100%"
-                height="100%"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <pattern
-                    id="grid-rec"
-                    width="40"
-                    height="40"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <circle cx="2" cy="2" r="1" fill="#F5F2EA" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid-rec)" />
               </svg>
             </div>
           </div>
