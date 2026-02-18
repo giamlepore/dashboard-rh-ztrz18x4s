@@ -16,7 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Plus, Pencil, ArrowLeft } from 'lucide-react'
+import {
+  Plus,
+  Pencil,
+  ArrowLeft,
+  Link as LinkIcon,
+  ExternalLink,
+} from 'lucide-react'
 import { JobForm, JobFormValues } from '@/components/forms/JobForm'
 import { useToast } from '@/hooks/use-toast'
 import { getJobs, createJob, updateJob, Job } from '@/services/jobs'
@@ -24,6 +30,11 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export default function Vagas() {
   const [jobs, setJobs] = useState<Job[]>([])
@@ -70,6 +81,16 @@ export default function Vagas() {
         variant: 'destructive',
       })
     }
+  }
+
+  const copyPublicLink = (id: string) => {
+    const link = `${window.location.origin}/vagas/publica/${id}`
+    navigator.clipboard.writeText(link)
+    toast({
+      title: 'Link copiado!',
+      description:
+        'O link público da vaga foi copiado para a área de transferência.',
+    })
   }
 
   return (
@@ -174,7 +195,41 @@ export default function Vagas() {
                       locale: ptBR,
                     })}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right whitespace-nowrap">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => copyPublicLink(job.id)}
+                          disabled={job.status !== 'Aberta'}
+                          className={
+                            job.status !== 'Aberta' ? 'opacity-50' : ''
+                          }
+                        >
+                          <LinkIcon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Copiar Link Público</TooltipContent>
+                    </Tooltip>
+
+                    {job.status === 'Aberta' && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              window.open(`/vagas/publica/${job.id}`, '_blank')
+                            }
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Ver página pública</TooltipContent>
+                      </Tooltip>
+                    )}
+
                     <Button
                       variant="ghost"
                       size="icon"

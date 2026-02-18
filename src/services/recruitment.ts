@@ -84,3 +84,47 @@ export const uploadCandidateCV = async (id: string, file: File) => {
 
   return publicUrl
 }
+
+export const submitPublicApplication = async (
+  candidate: {
+    nome_candidato: string
+    email: string
+    telefone: string
+    vaga_id: string
+    vaga: string
+    organization_id: string
+  },
+  file: File,
+) => {
+  // 1. Upload CV first to get the URL
+  const fileExt = file.name.split('.').pop()
+  // Generate a random ID for the filename since we don't have the candidate ID yet
+  const tempId = crypto.randomUUID()
+  const fileName = `${tempId}-cv-${Date.now()}.${fileExt}`
+  const filePath = `${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('curriculos')
+    .upload(filePath, file)
+
+  if (uploadError) throw uploadError
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from('curriculos').getPublicUrl(filePath)
+
+  // 2. Create Candidate Record
+  const { data, error } = await supabase
+    .from('recrutamento')
+    .insert({
+      ...candidate,
+      curriculo_url: publicUrl,
+      status: 'Triagem', // Default status for new public applications
+      image_gender: Math.random() > 0.5 ? 'male' : 'female',
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Candidate
+}

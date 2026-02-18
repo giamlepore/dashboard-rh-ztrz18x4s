@@ -28,6 +28,17 @@ export const getJobs = async () => {
   })) as Job[]
 }
 
+export const getJobById = async (id: string) => {
+  const { data, error } = await supabase
+    .from('vagas')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data as Job
+}
+
 export const createJob = async (
   job: Omit<
     Job,
