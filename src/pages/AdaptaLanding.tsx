@@ -39,7 +39,8 @@ export default function AdaptaLanding() {
         </div>
       </nav>
 
-      <div className="p-4 md:p-6 lg:p-8 pt-20 md:pt-24 max-w-[1600px] mx-auto">
+      {/* Main Content with increased padding top for desktop to avoid overlap with fixed header */}
+      <div className="p-4 md:p-6 lg:p-8 pt-20 md:pt-40 max-w-[1600px] mx-auto">
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 auto-rows-min">
           {/* 1. Hero Card - Salmon */}
