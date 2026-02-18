@@ -113,7 +113,10 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className={cn('border-r border-sidebar-border/30', isMobile && 'pt-0')}
+      className={cn(
+        'shadow-[4px_0_24px_-4px_rgba(26,26,24,0.06)] border-none',
+        isMobile && 'pt-0',
+      )}
     >
       <SidebarHeader className="p-6 gap-6">
         <div className="flex items-center justify-between overflow-hidden">
