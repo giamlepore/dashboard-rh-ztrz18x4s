@@ -20,6 +20,7 @@ export interface Candidate {
   image_gender: string
   created_at: string
   curriculo_url?: string | null
+  organization_id: string
 }
 
 export const getCandidates = async () => {

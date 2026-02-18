@@ -10,6 +10,7 @@ export interface TimeLog {
   colaboradores?: {
     nome: string
   }
+  organization_id: string
 }
 
 export const getTimeLogs = async (colaboradorId?: string) => {
@@ -30,7 +31,9 @@ export const getTimeLogs = async (colaboradorId?: string) => {
 }
 
 export const createTimeLog = async (
-  log: Omit<TimeLog, 'id' | 'colaboradores'>,
+  log: Omit<TimeLog, 'id' | 'colaboradores' | 'organization_id'> & {
+    organization_id?: string
+  },
 ) => {
   const { data, error } = await supabase
     .from('ponto')

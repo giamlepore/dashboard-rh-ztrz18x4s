@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,14 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    const orgId = searchParams.get('orgId')
+    if (orgId) {
+      localStorage.setItem('inviteOrgId', orgId)
+    }
+  }, [searchParams])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,7 +64,11 @@ export default function SignUp() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">Crie sua conta</CardTitle>
-          <CardDescription>Passo 1: Credenciais de acesso</CardDescription>
+          <CardDescription>
+            {searchParams.get('orgId')
+              ? 'Você foi convidado para participar de uma organização'
+              : 'Passo 1: Credenciais de acesso'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp} className="space-y-4">

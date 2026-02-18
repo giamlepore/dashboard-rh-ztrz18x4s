@@ -27,6 +27,8 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>({
     role: null,
     colaboradorId: null,
+    organizationId: null,
+    organizationName: null,
     employee: null,
   })
   const [loading, setLoading] = useState(true)
@@ -40,6 +42,8 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
         setProfile({
           role: null,
           colaboradorId: null,
+          organizationId: null,
+          organizationName: null,
           employee: null,
         })
       }

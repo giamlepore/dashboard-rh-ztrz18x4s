@@ -22,6 +22,7 @@ import {
   Search,
   Filter,
   History,
+  Building,
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
@@ -90,17 +91,24 @@ const recentItems = [
 export function AppSidebar() {
   const { isMobile } = useSidebar()
   const location = useLocation()
-  const { role, loading } = useUserRole()
+  const { role, loading, organizationName } = useUserRole()
 
   if (loading) return null
 
   return (
     <Sidebar collapsible="icon" className={cn('border-r', isMobile && 'pt-0')}>
       <SidebarHeader className="p-4 gap-4">
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-semibold tracking-tight text-foreground/90 group-data-[collapsible=icon]:hidden">
-            ADAPTARH
-          </span>
+        <div className="flex items-center justify-between overflow-hidden">
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <span className="text-lg font-semibold tracking-tight text-foreground/90 truncate">
+              ADAPTARH
+            </span>
+            {organizationName && (
+              <span className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                <Building className="h-3 w-3" /> {organizationName}
+              </span>
+            )}
+          </div>
         </div>
         <div className="relative group-data-[collapsible=icon]:hidden">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />

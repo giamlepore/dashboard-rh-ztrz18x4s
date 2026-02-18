@@ -10,6 +10,7 @@ export interface Vacation {
   colaboradores?: {
     nome: string
   }
+  organization_id: string
 }
 
 export const getVacations = async () => {
@@ -34,7 +35,10 @@ export const getVacationsByEmployeeId = async (employeeId: string) => {
 }
 
 export const createVacation = async (
-  vacation: Omit<Vacation, 'id' | 'colaboradores' | 'status'>,
+  vacation: Omit<
+    Vacation,
+    'id' | 'colaboradores' | 'status' | 'organization_id'
+  > & { organization_id?: string },
 ) => {
   const { data, error } = await supabase
     .from('ferias')

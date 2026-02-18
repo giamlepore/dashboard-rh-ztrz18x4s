@@ -4,9 +4,21 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  Copy,
+  Building,
 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useNavigate } from 'react-router-dom'
+import { useUserRole } from '@/hooks/use-user-role'
+import { toast } from 'sonner'
 
 const suggestions = [
   {
@@ -41,9 +53,51 @@ const suggestions = [
 
 export default function Index() {
   const navigate = useNavigate()
+  const { isAdmin, organizationId, organizationName } = useUserRole()
+
+  const copyInviteLink = () => {
+    if (!organizationId) return
+    const link = `${window.location.origin}/signup?orgId=${organizationId}`
+    navigator.clipboard.writeText(link)
+    toast.success('Link copiado!', {
+      description: 'Envie para novos colaboradores se cadastrarem.',
+    })
+  }
 
   return (
-    <div className="flex h-full flex-col items-center justify-center p-6 md:p-12 animate-fade-in">
+    <div className="flex flex-col gap-6 p-6 md:p-12 animate-fade-in">
+      {isAdmin && organizationId && (
+        <Card className="w-full max-w-2xl mx-auto border-dashed border-2 border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Building className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg">Convidar Colaboradores</CardTitle>
+            </div>
+            <CardDescription>
+              Compartilhe o link abaixo para adicionar membros à{' '}
+              <strong>{organizationName || 'sua organização'}</strong>.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Input
+                readOnly
+                value={`${window.location.origin}/signup?orgId=${organizationId}`}
+                className="bg-background font-mono text-xs md:text-sm"
+              />
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={copyInviteLink}
+                title="Copiar link"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="w-full max-w-2xl mx-auto space-y-6">
         <h2 className="text-xl font-semibold tracking-tight text-foreground pl-1">
           Acesso Rápido

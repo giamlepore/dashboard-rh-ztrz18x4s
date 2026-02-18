@@ -11,6 +11,7 @@ export interface Job {
   status: 'Aberta' | 'Fechada'
   created_at: string
   candidates_count?: number
+  organization_id: string
 }
 
 export const getJobs = async () => {
@@ -28,7 +29,10 @@ export const getJobs = async () => {
 }
 
 export const createJob = async (
-  job: Omit<Job, 'id' | 'created_at' | 'candidates_count'>,
+  job: Omit<
+    Job,
+    'id' | 'created_at' | 'candidates_count' | 'organization_id'
+  > & { organization_id?: string },
 ) => {
   const { data, error } = await supabase
     .from('vagas')

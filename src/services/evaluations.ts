@@ -12,6 +12,7 @@ export interface Evaluation {
   observacoes: string | null
   colaborador?: { nome: string }
   avaliador?: { nome: string }
+  organization_id: string
 }
 
 export interface CreateEvaluationDTO {
@@ -22,6 +23,7 @@ export interface CreateEvaluationDTO {
   nota_qualidade: number
   nota_trabalho_equipe: number
   observacoes?: string
+  organization_id?: string
 }
 
 export const getEvaluations = async () => {

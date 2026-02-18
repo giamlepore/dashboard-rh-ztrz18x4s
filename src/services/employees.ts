@@ -19,6 +19,7 @@ export interface Employee {
   image_gender: string
   role: 'Admin' | 'Gerente' | 'Colaborador' | 'visitante'
   user_id: string | null
+  organization_id: string
 }
 
 export const getEmployees = async (userId?: string) => {
