@@ -6,6 +6,10 @@ import {
   Briefcase,
   Loader2,
   Inbox,
+  MoreVertical,
+  Pencil,
+  Link as LinkIcon,
+  ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +25,23 @@ import { useToast } from '@/hooks/use-toast'
 import { getJobs, createJob, updateJob, Job } from '@/services/jobs'
 import { useNavigate } from 'react-router-dom'
 import { JobCard } from '@/components/JobCard'
+import { ViewSwitcher } from '@/components/ViewSwitcher'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 
 export default function Vagas() {
   const [jobs, setJobs] = useState<Job[]>([])
@@ -29,6 +50,7 @@ export default function Vagas() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingJob, setEditingJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(true)
+  const [view, setView] = useState<'cards' | 'table'>('cards')
 
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -222,7 +244,12 @@ export default function Vagas() {
             </div>
           </div>
 
-          {/* Grid of Jobs */}
+          {/* View Switcher */}
+          <div className="col-span-1 md:col-span-12 flex justify-end">
+            <ViewSwitcher view={view} setView={setView} />
+          </div>
+
+          {/* Grid of Jobs or Table */}
           <div className="col-span-1 md:col-span-12 mt-4">
             {loading ? (
               <div className="flex justify-center py-20">
@@ -235,7 +262,7 @@ export default function Vagas() {
                   Nenhuma vaga encontrada.
                 </p>
               </div>
-            ) : (
+            ) : view === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {filteredJobs.map((job) => (
                   <JobCard
@@ -251,6 +278,111 @@ export default function Vagas() {
                     }
                   />
                 ))}
+              </div>
+            ) : (
+              <div className="rounded-[24px] border border-ink/5 bg-white/50 backdrop-blur-sm overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-ink/5">
+                    <TableRow className="hover:bg-transparent border-ink/5">
+                      <TableHead className="text-ink font-medium">
+                        Título
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Departamento
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Tipo de Contrato
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Salário
+                      </TableHead>
+                      <TableHead className="text-ink font-medium">
+                        Status
+                      </TableHead>
+                      <TableHead className="text-right text-ink font-medium">
+                        Ações
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredJobs.map((job) => (
+                      <TableRow
+                        key={job.id}
+                        className="border-ink/5 hover:bg-white/60"
+                      >
+                        <TableCell className="font-medium text-ink">
+                          {job.titulo}
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {job.departamento}
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {job.tipo_contrato}
+                        </TableCell>
+                        <TableCell className="text-ink/70">
+                          {job.salario > 0
+                            ? `R$ ${job.salario.toLocaleString('pt-BR')}`
+                            : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              job.status === 'Fechada' ? 'secondary' : 'default'
+                            }
+                            className={cn(
+                              job.status !== 'Fechada' &&
+                                'bg-emerald-600 hover:bg-emerald-700',
+                            )}
+                          >
+                            {job.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-ink/5"
+                              >
+                                <MoreVertical className="h-4 w-4 text-ink/50" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setEditingJob(job)
+                                  setIsDialogOpen(true)
+                                }}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" /> Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => copyPublicLink(job.id)}
+                              >
+                                <LinkIcon className="mr-2 h-4 w-4" /> Copiar
+                                Link
+                              </DropdownMenuItem>
+                              {job.status !== 'Fechada' && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    window.open(
+                                      `/vagas/publica/${job.id}`,
+                                      '_blank',
+                                    )
+                                  }
+                                >
+                                  <ExternalLink className="mr-2 h-4 w-4" /> Ver
+                                  Pública
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </div>
