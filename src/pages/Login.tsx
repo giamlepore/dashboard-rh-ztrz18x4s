@@ -20,19 +20,40 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (loading) return
+
     setLoading(true)
 
-    const { error } = await signIn(email, password)
+    try {
+      const { error } = await signIn(email, password)
 
-    if (error) {
+      if (error) {
+        let errorMessage = 'Verifique suas credenciais e tente novamente.'
+
+        if (
+          error.message.includes('Invalid login credentials') ||
+          error.status === 400
+        ) {
+          errorMessage =
+            'E-mail ou senha incorretos. Verifique as informações digitadas.'
+        } else if (error.message) {
+          errorMessage = error.message
+        }
+
+        toast.error('Erro ao fazer login', {
+          description: errorMessage,
+        })
+      } else {
+        toast.success('Login realizado com sucesso')
+        navigate(from, { replace: true })
+      }
+    } catch (err) {
       toast.error('Erro ao fazer login', {
-        description:
-          error.message || 'Verifique suas credenciais e tente novamente.',
+        description: 'Ocorreu um erro inesperado. Tente novamente mais tarde.',
       })
+    } finally {
       setLoading(false)
-    } else {
-      toast.success('Login realizado com sucesso')
-      navigate(from, { replace: true })
     }
   }
 
