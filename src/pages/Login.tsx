@@ -18,6 +18,11 @@ export default function Login() {
   // @ts-expect-error - location state type
   const from = location.state?.from?.pathname || '/'
 
+  const fillDemoCredentials = () => {
+    setEmail('teste@adapta.org')
+    setPassword('Template@123')
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -97,6 +102,21 @@ export default function Login() {
             <p className="text-ink/60 text-sm">
               Entre com suas credenciais para acessar.
             </p>
+          </div>
+
+          <div className="mb-5 p-3 rounded-xl bg-cream/50 border border-ink/10 flex items-center justify-between gap-3">
+            <div className="text-xs text-ink/60">
+              <span className="font-semibold text-ink/80">Demo:</span>{' '}
+              teste@adapta.org
+            </div>
+            <button
+              type="button"
+              onClick={fillDemoCredentials}
+              disabled={loading}
+              className="text-xs font-semibold text-salmon hover:text-ink transition-colors underline decoration-salmon/30 underline-offset-4 hover:decoration-ink"
+            >
+              Preencher
+            </button>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
