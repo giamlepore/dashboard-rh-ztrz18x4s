@@ -86,7 +86,7 @@ export default function Relatorios() {
     <>
       <style type="text/css" media="print">
         {`
-          @page { size: landscape; margin: 10mm; }
+          @page { size: portrait; margin: 8mm; }
           html, body, #root { height: auto !important; overflow: visible !important; }
           body {
             -webkit-print-color-adjust: exact !important;
@@ -100,9 +100,9 @@ export default function Relatorios() {
       </style>
       <div className="p-6 md:p-8 space-y-6 animate-fade-in bg-[#F9FAFB] dark:bg-zinc-950 min-h-screen print:bg-white print:p-0 print:m-0 print:min-h-0">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 print:mb-4">
           <div>
-            <h1 className="font-instrument text-4xl md:text-5xl text-ink dark:text-cream">
+            <h1 className="font-instrument text-4xl md:text-5xl text-ink dark:text-cream print:text-3xl">
               Relatórios & <span className="italic text-salmon">Insights</span>
             </h1>
             <p className="text-ink/60 dark:text-cream/60 mt-2 max-w-lg print:hidden">
@@ -123,50 +123,50 @@ export default function Relatorios() {
         </div>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 print:grid-cols-12 gap-6 auto-rows-min print:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 print:grid-cols-12 gap-6 auto-rows-min print:gap-3">
           {/* KPI Cards Row */}
-          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-white dark:bg-zinc-900 border border-ink/5 rounded-[24px] p-6 print:p-4 flex items-center gap-4 hover:shadow-md transition-all">
-            <div className="p-4 bg-salmon/20 rounded-full text-salmon">
-              <DollarSign className="w-6 h-6" />
+          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-white dark:bg-zinc-900 border border-ink/5 rounded-[24px] print:rounded-2xl p-6 print:p-3 flex items-center gap-4 print:gap-2 hover:shadow-md transition-all">
+            <div className="p-4 print:p-2 bg-salmon/20 rounded-full text-salmon">
+              <DollarSign className="w-6 h-6 print:w-4 print:h-4" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-widest text-ink/50 font-bold">
+              <p className="text-xs uppercase tracking-widest text-ink/50 font-bold print:text-[10px]">
                 Custo Folha
               </p>
-              <p className="text-2xl font-bold text-ink dark:text-cream font-instrument mt-1">
+              <p className="text-2xl font-bold text-ink dark:text-cream font-instrument mt-1 print:text-lg">
                 {formatCurrency(data.stats.totalPayroll)}
               </p>
             </div>
           </div>
 
-          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-white dark:bg-zinc-900 border border-ink/5 rounded-[24px] p-6 print:p-4 flex items-center gap-4 hover:shadow-md transition-all">
-            <div className="p-4 bg-periwinkle/20 rounded-full text-blue-600">
-              <Users className="w-6 h-6" />
+          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-white dark:bg-zinc-900 border border-ink/5 rounded-[24px] print:rounded-2xl p-6 print:p-3 flex items-center gap-4 print:gap-2 hover:shadow-md transition-all">
+            <div className="p-4 print:p-2 bg-periwinkle/20 rounded-full text-blue-600">
+              <Users className="w-6 h-6 print:w-4 print:h-4" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-widest text-ink/50 font-bold">
+              <p className="text-xs uppercase tracking-widest text-ink/50 font-bold print:text-[10px]">
                 Headcount
               </p>
-              <p className="text-2xl font-bold text-ink dark:text-cream font-instrument mt-1">
+              <p className="text-2xl font-bold text-ink dark:text-cream font-instrument mt-1 print:text-lg">
                 {data.stats.totalEmployees}{' '}
-                <span className="text-sm font-sans font-normal text-ink/40">
+                <span className="text-sm print:text-xs font-sans font-normal text-ink/40">
                   ativos
                 </span>
               </p>
             </div>
           </div>
 
-          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-white dark:bg-zinc-900 border border-ink/5 rounded-[24px] p-6 print:p-4 flex items-center gap-4 hover:shadow-md transition-all">
-            <div className="p-4 bg-sage/20 rounded-full text-green-700">
-              <Briefcase className="w-6 h-6" />
+          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-white dark:bg-zinc-900 border border-ink/5 rounded-[24px] print:rounded-2xl p-6 print:p-3 flex items-center gap-4 print:gap-2 hover:shadow-md transition-all">
+            <div className="p-4 print:p-2 bg-sage/20 rounded-full text-green-700">
+              <Briefcase className="w-6 h-6 print:w-4 print:h-4" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-widest text-ink/50 font-bold">
+              <p className="text-xs uppercase tracking-widest text-ink/50 font-bold print:text-[10px]">
                 Pipeline
               </p>
-              <p className="text-2xl font-bold text-ink dark:text-cream font-instrument mt-1">
+              <p className="text-2xl font-bold text-ink dark:text-cream font-instrument mt-1 print:text-lg">
                 {data.stats.totalCandidates}{' '}
-                <span className="text-sm font-sans font-normal text-ink/40">
+                <span className="text-sm print:text-xs font-sans font-normal text-ink/40">
                   candidatos
                 </span>
               </p>
@@ -174,14 +174,14 @@ export default function Relatorios() {
           </div>
 
           {/* Performance Chart - Cream */}
-          <div className="col-span-1 md:col-span-8 print:col-span-8 bg-cream border border-ink/5 rounded-[32px] p-8 print:p-6 min-h-[400px] print:min-h-[300px]">
-            <div className="flex items-center gap-2 mb-6">
+          <div className="col-span-1 md:col-span-8 print:col-span-8 bg-cream border border-ink/5 rounded-[32px] p-8 print:p-4 min-h-[400px] print:min-h-[260px] flex flex-col">
+            <div className="flex items-center gap-2 mb-6 print:mb-2">
               <TrendingUp className="w-5 h-5 text-ink" />
-              <h3 className="font-instrument text-2xl text-ink">
+              <h3 className="font-instrument text-2xl text-ink print:text-xl">
                 Performance por Departamento
               </h3>
             </div>
-            <div className="h-[300px] w-full">
+            <div className="h-[300px] print:h-[180px] w-full flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={data.performance}
@@ -240,15 +240,17 @@ export default function Relatorios() {
           </div>
 
           {/* Upcoming Vacations - Ink */}
-          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-ink rounded-[32px] p-8 print:p-6 text-cream flex flex-col relative overflow-hidden">
+          <div className="col-span-1 md:col-span-4 print:col-span-4 bg-ink rounded-[32px] p-8 print:p-4 text-cream flex flex-col relative overflow-hidden print:min-h-[260px]">
             <div className="absolute top-0 right-0 w-32 h-32 bg-salmon rounded-full blur-[80px] opacity-20" />
 
-            <div className="flex items-center gap-2 mb-6 relative z-10">
+            <div className="flex items-center gap-2 mb-6 print:mb-2 relative z-10">
               <Plane className="w-5 h-5 text-salmon" />
-              <h3 className="font-instrument text-2xl">Próximas Férias</h3>
+              <h3 className="font-instrument text-2xl print:text-xl">
+                Próximas Férias
+              </h3>
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto print:overflow-visible pr-2 relative z-10 custom-scrollbar">
+            <div className="flex-1 space-y-4 print:space-y-2 overflow-y-auto print:overflow-hidden pr-2 relative z-10 custom-scrollbar">
               {data.upcomingVacations.length > 0 ? (
                 data.upcomingVacations.map((vacation, idx) => (
                   <div
@@ -285,14 +287,14 @@ export default function Relatorios() {
           </div>
 
           {/* Recruitment Funnel - Periwinkle */}
-          <div className="col-span-1 md:col-span-6 print:col-span-6 bg-periwinkle rounded-[32px] p-8 print:p-6 min-h-[350px] print:min-h-[250px]">
-            <div className="flex items-center gap-2 mb-6">
+          <div className="col-span-1 md:col-span-6 print:col-span-6 bg-periwinkle rounded-[32px] p-8 print:p-4 min-h-[350px] print:min-h-[240px] flex flex-col">
+            <div className="flex items-center gap-2 mb-6 print:mb-2">
               <Briefcase className="w-5 h-5 text-ink" />
-              <h3 className="font-instrument text-2xl text-ink">
+              <h3 className="font-instrument text-2xl text-ink print:text-xl">
                 Funil de Recrutamento
               </h3>
             </div>
-            <div className="h-[250px] w-full">
+            <div className="h-[250px] print:h-[180px] w-full flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={data.recruitment}
@@ -330,14 +332,14 @@ export default function Relatorios() {
           </div>
 
           {/* Payroll Distribution - Sage */}
-          <div className="col-span-1 md:col-span-6 print:col-span-6 bg-sage rounded-[32px] p-8 print:p-6 min-h-[350px] print:min-h-[250px]">
-            <div className="flex items-center gap-2 mb-6">
+          <div className="col-span-1 md:col-span-6 print:col-span-6 bg-sage rounded-[32px] p-8 print:p-4 min-h-[350px] print:min-h-[240px] flex flex-col">
+            <div className="flex items-center gap-2 mb-6 print:mb-2">
               <DollarSign className="w-5 h-5 text-ink" />
-              <h3 className="font-instrument text-2xl text-ink">
+              <h3 className="font-instrument text-2xl text-ink print:text-xl">
                 Distribuição Salarial
               </h3>
             </div>
-            <div className="h-[250px] w-full flex items-center justify-center">
+            <div className="h-[250px] print:h-[180px] w-full flex items-center justify-center flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
