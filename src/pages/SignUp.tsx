@@ -37,9 +37,16 @@ export default function SignUp() {
     const { error } = await signUp(email, password)
 
     if (error) {
-      toast.error('Erro ao criar conta', {
-        description: error.message,
-      })
+      if (error.status === 429 || error.message?.includes('rate limit')) {
+        toast.error('Limite de tentativas excedido', {
+          description:
+            'Muitas tentativas de cadastro. Por favor, tente novamente mais tarde.',
+        })
+      } else {
+        toast.error('Erro ao criar conta', {
+          description: error.message,
+        })
+      }
       setLoading(false)
     } else {
       toast.success('Conta criada com sucesso!', {
