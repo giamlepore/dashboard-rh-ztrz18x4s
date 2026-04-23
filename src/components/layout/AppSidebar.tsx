@@ -26,11 +26,14 @@ import {
   Shield,
   Briefcase,
   Home,
+  LogOut,
 } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useUserRole } from '@/hooks/use-user-role'
+import { useAuth } from '@/hooks/use-auth'
 import { InviteCollaboratorDialog } from '@/components/InviteCollaboratorDialog'
+import { toast } from 'sonner'
 
 const menuGroups = [
   {
@@ -100,9 +103,21 @@ const menuGroups = [
 export function AppSidebar() {
   const { isMobile } = useSidebar()
   const location = useLocation()
+  const navigate = useNavigate()
+  const { signOut } = useAuth()
   const { role, loading, organizationName, organizationId } = useUserRole()
 
   if (loading) return null
+
+  const handleLogout = async () => {
+    const { error } = await signOut()
+    if (error) {
+      toast.error('Erro ao sair', { description: error.message })
+      return
+    }
+    toast.success('Sessão encerrada')
+    navigate('/login', { replace: true })
+  }
 
   // Function to check if a route is active (including sub-routes)
   const isRouteActive = (itemUrl: string) => {
@@ -224,6 +239,15 @@ export function AppSidebar() {
             </span>
           </div>
         </div>
+
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          className="w-full gap-2 rounded-full border-sidebar-border/50 text-sidebar-foreground hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 font-sans"
+        >
+          <LogOut className="h-4 w-4" />
+          Sair
+        </Button>
 
         <div className="text-[10px] text-center text-muted-foreground/60 font-instrument italic">
           ADAPTARH v2.6 &copy; 2026
